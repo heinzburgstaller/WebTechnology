@@ -18,7 +18,7 @@ export class NetworkService {
     this.playersRef = db.list('players');
     // Use snapshotChanges().map() to store the key
     this.players = this.playersRef.snapshotChanges().map(changes => {
-      return changes.map(c => ({ key: c.payload.key, ...c.payload.val() }));
+      return changes.map(c => ({ key: c.payload.key, conn: null, ...c.payload.val() }));
     });
 
     this.peer = new Peer({ key: NetworkService.PEER_JS_API_KEY });
@@ -36,12 +36,19 @@ export class NetworkService {
     });
 
     TimerObservable
-      .create(2500, 250).subscribe(() => {
+      .create(2500, 2000).subscribe(() => {
         this.players.subscribe(arr => {
           const randomIndex = Math.floor(Math.random() * (arr.length - 1));
-          const conn = this.peer.connect(arr[randomIndex].peerId);
+          if (this.peerId === arr[randomIndex].peerId) {
+            return;
+          }
+          if (arr[randomIndex].conn != null) {
+            arr[randomIndex].conn.close();
+          }
+          arr[randomIndex].conn = this.peer.connect(arr[randomIndex].peerId);
         });
       });
+
   }
 
   addItem(name: string, peerId: any, isPlaying: boolean) {
