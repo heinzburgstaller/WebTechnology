@@ -26,7 +26,12 @@
   <div class="main-container row">
 
     <div class="col-md-2">
-      <p>Players</p>
+      <h3>Players</h3>
+      <ul>
+        <li class="text" *ngFor="let player of networkService.players | async">
+          {{player.name}}
+        </li>
+      </ul>
     </div>
 
     <div class="col-md-5">

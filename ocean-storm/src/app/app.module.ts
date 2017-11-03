@@ -4,7 +4,11 @@ import { ButtonsModule } from 'ngx-bootstrap/buttons';
 import { AlertModule } from 'ngx-bootstrap/alert';
 
 import { AppComponent } from './app.component';
+import { NetworkService } from './network.service';
 
+import { AngularFireModule } from 'angularfire2';
+import { AngularFirestoreModule } from 'angularfire2/firestore';
+import { environment } from '../environments/environment';
 
 @NgModule({
   declarations: [
@@ -12,10 +16,12 @@ import { AppComponent } from './app.component';
   ],
   imports: [
     BrowserModule,
+    AngularFireModule.initializeApp(environment.firebase, 'ocean-storm-firebase'),
+    AngularFirestoreModule,
     AlertModule.forRoot(),
     ButtonsModule.forRoot()
   ],
-  providers: [],
+  providers: [NetworkService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
