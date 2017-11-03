@@ -7,7 +7,7 @@ import { AppComponent } from './app.component';
 import { NetworkService } from './network.service';
 
 import { AngularFireModule } from 'angularfire2';
-import { AngularFirestoreModule } from 'angularfire2/firestore';
+import { AngularFireDatabase } from 'angularfire2/database';
 import { environment } from '../environments/environment';
 
 @NgModule({
@@ -17,11 +17,10 @@ import { environment } from '../environments/environment';
   imports: [
     BrowserModule,
     AngularFireModule.initializeApp(environment.firebase, 'ocean-storm-firebase'),
-    AngularFirestoreModule,
     AlertModule.forRoot(),
     ButtonsModule.forRoot()
   ],
-  providers: [NetworkService],
+  providers: [AngularFireDatabase, NetworkService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

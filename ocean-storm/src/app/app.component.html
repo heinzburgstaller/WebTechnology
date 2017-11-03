@@ -29,7 +29,7 @@
       <h3>Players</h3>
       <ul>
         <li class="text" *ngFor="let player of networkService.players | async">
-          {{player.name}}
+          {{ player.name }} {{ player.peerId }}
         </li>
       </ul>
     </div>

@@ -1,14 +1,8 @@
 import { Injectable } from '@angular/core';
-import { AngularFirestore, AngularFirestoreCollection } from 'angularfire2/firestore';
 import { Observable } from 'rxjs/Observable';
 import { TimerObservable } from 'rxjs/observable/TimerObservable';
-import { IntervalObservable } from 'rxjs/observable/IntervalObservable';
-import 'rxjs/add/operator/map';
-
 import { AngularFireDatabase, AngularFireList } from 'angularfire2/database';
-
-
-export class Player { name: string; peerId: any; }
+import 'rxjs/add/operator/map';
 
 @Injectable()
 export class NetworkService {
@@ -17,38 +11,39 @@ export class NetworkService {
 
   public peer;
   public peerId;
-  private playersCollection: AngularFirestoreCollection<any>;
-  public players: Observable<any[]>;
-  sub;
+  playersRef: AngularFireList<any>;
+  players: Observable<any[]>;
 
-  constructor(private db: AngularFirestore) {
-    this.playersCollection = db.collection<Player>('players');
-    this.players = this.playersCollection.valueChanges();
+  constructor(private db: AngularFireDatabase) {
+    this.playersRef = db.list('players');
+    // Use snapshotChanges().map() to store the key
+    this.players = this.playersRef.snapshotChanges().map(changes => {
+      return changes.map(c => ({ key: c.payload.key, ...c.payload.val() }));
+    });
+
     this.peer = new Peer({ key: NetworkService.PEER_JS_API_KEY });
     this.peer.on('open', (id) => {
       this.peerId = id;
+      this.addItem('PlayerX', id, false);
     });
 
     TimerObservable
       .create(2500, 1000).subscribe(() => {
         console.log(this.peerId);
-        let index = 1;
-        let i = 0;
-        let p:Observable<any[]> = this.players.filter(player => true);
-        p.map(element => {
-          console.log(element);
-        });
-
-        //console.log(p);
       });
   }
 
-  public addPlayer(player: Player) {
-    this.playersCollection.add(player);
+  addItem(name: string, peerId: any, isPlaying: boolean) {
+    this.playersRef.push({ name: name, peerId: peerId, isPlaying: isPlaying });
   }
-
-  public onOpen(id) {
-
+  updateItem(key: string, name: string, isPlaying: boolean) {
+    this.playersRef.update(key, { name: name, isPlaying: isPlaying });
+  }
+  deleteItem(key: string) {
+    this.playersRef.remove(key);
+  }
+  deleteEverything() {
+    this.playersRef.remove();
   }
 
 }
