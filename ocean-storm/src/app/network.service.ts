@@ -38,7 +38,7 @@ export class NetworkService {
     TimerObservable
       .create(2500, 2000).subscribe(() => {
         this.players.subscribe(arr => {
-          const randomIndex = Math.floor(Math.random() * (arr.length - 1));
+          const randomIndex = this.getRandomInt(0, arr.length - 1);
           if (this.peerId === arr[randomIndex].peerId) {
             return;
           }
@@ -49,6 +49,10 @@ export class NetworkService {
         });
       });
 
+  }
+
+  getRandomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
   }
 
   addItem(name: string, peerId: any, isPlaying: boolean) {
