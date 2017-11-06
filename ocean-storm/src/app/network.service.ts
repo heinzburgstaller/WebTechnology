@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
-import { TimerObservable } from 'rxjs/observable/TimerObservable';
 import { AngularFireDatabase, AngularFireList } from 'angularfire2/database';
 import 'rxjs/add/operator/map';
 
@@ -11,6 +10,7 @@ export class NetworkService {
 
   public peer;
   public peerId;
+  public key;
   playersRef: AngularFireList<any>;
   players: Observable<any[]>;
 
@@ -24,60 +24,37 @@ export class NetworkService {
     this.peer = new Peer({ key: NetworkService.PEER_JS_API_KEY });
     this.peer.on('open', (id) => {
       this.peerId = id;
-      this.addItem('PlayerX', id, false);
+      this.key = this.addPlayer('PlayerX', id, false);
     });
 
     this.peer.on('error', (error) => {
       if (error.type === 'peer-unavailable') {
         const n = error.message.split(' ');
         const unPeerId = n[n.length - 1];
-        this.deleteItem(unPeerId);
+        // this.deleteItem(unPeerId);
       }
     });
 
-    TimerObservable
-      .create(2500, 2000).subscribe(() => {
-        this.players.subscribe(arr => {
-          const randomIndex = this.getRandomInt(0, arr.length - 1);
-          if (this.peerId === arr[randomIndex].peerId) {
-            return;
-          }
-          if (arr[randomIndex].conn != null) {
-            arr[randomIndex].conn.close();
-          }
-          arr[randomIndex].conn = this.peer.connect(arr[randomIndex].peerId);
-        });
-      });
-
   }
 
-  getRandomInt(min, max) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
+  addPlayer(name: string, peerId: any, isPlaying: boolean) {
+    return this.playersRef.push({ name: name, peerId: peerId, isPlaying: isPlaying }).key;
   }
 
-  addItem(name: string, peerId: any, isPlaying: boolean) {
-    this.playersRef.push({ name: name, peerId: peerId, isPlaying: isPlaying });
-  }
-
-  updateItem(key: string, name: string, isPlaying: boolean) {
+  updatePlayer(key: string, name: string, isPlaying: boolean) {
     this.playersRef.update(key, { name: name, isPlaying: isPlaying });
   }
 
-  deleteItem(peerId: string) {
-    if (this.peerId === peerId) {
-      return;
-    }
-
-    this.players.subscribe(arr => {
-      const x = arr.filter(
-        player => player.peerId === peerId);
-      const key = x[0].key;
-      this.playersRef.remove(key);
-    });
+  deletePlayer(key) {
+    this.playersRef.remove(key);
   }
 
-  deleteEverything() {
-    this.playersRef.remove();
+  changePlayerName(newName: string) {
+    this.updatePlayer(this.key, newName, false);
+  }
+
+  unregister() {
+    this.deletePlayer(this.key);
   }
 
 }

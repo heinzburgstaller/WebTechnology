@@ -26,7 +26,11 @@
   <div class="main-container row">
 
     <div class="col-md-2">
-      <h3>Players</h3>
+      <div class="form-group">
+        <label for="usr">Name</label>
+        <input type="text" class="form-control" value="PlayerX" (change)="playerNameChange($event)">
+      </div>
+      <h4>Players</h4>
       <ul>
         <li class="text" *ngFor="let player of networkService.players | async">
           {{ player.name }} {{ player.peerId }}
@@ -47,9 +51,9 @@
   <div class="row">
 
     <div class="col-md-12">
-        <alert type="success">
-            <strong>Status</strong> Give player hints.
-          </alert>
+      <alert type="success">
+        <strong>Status</strong> Give player hints.
+      </alert>
     </div>
 
 
