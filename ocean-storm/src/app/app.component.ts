@@ -1,4 +1,4 @@
-import { Component, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { NetworkService } from './network.service';
 
 @Component({
@@ -6,23 +6,41 @@ import { NetworkService } from './network.service';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
-export class AppComponent {
-  title = 'app';
+export class AppComponent implements OnInit, OnDestroy {
+
+  subscription: any;
 
   constructor(private networkService: NetworkService) {
 
+  }
+
+  ngOnInit() {
+    this.subscription = this.networkService.getMessageEmitter()
+      .subscribe(message => {
+        console.log(message);
+      });
+  }
+
+  ngOnDestroy() {
+    this.subscription.unsubscribe();
   }
 
   playerNameChange(event) {
     this.networkService.changePlayerName(event.target.value);
   }
 
+  playWith(player) {
+    this.networkService.connectToEnemy(player.peerId);
+  }
+
+  sendSomething() {
+    this.networkService.sendMessage({ message: 'Hello!!!', date: new Date() });
+  }
+
   @HostListener('window:beforeunload', ['$event'])
   public beforeunloadHandler($event) {
     this.networkService.unregister();
-    $event.returnValue = 'false';
-    return false;
+    return 'nothing';
   }
-
 
 }
