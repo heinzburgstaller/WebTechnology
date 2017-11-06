@@ -26,26 +26,38 @@
   <div class="main-container row">
 
     <div class="col-md-2">
+
       <div class="form-group">
         <label for="usr">Name</label>
         <input type="text" class="form-control" value="Player" (change)="playerNameChange($event)">
       </div>
-      <h4>Players</h4>
-      <ul>
-        <li class="text" *ngFor="let player of networkService.players | async">
-          {{ player.name }} {{ player.peerId }}
-          <button *ngIf="player.peerId != networkService.peerId" type="button"
-            class="btn btn-default btn-sm" (click)="playWith(player)">
-            <span class="glyphicon glyphicon-expand"></span>
-          </button>
-        </li>
-      </ul>
+
+      <table class="table table-striped table-hover">
+        <thead>
+          <tr>
+            <th>Players</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let player of networkService.players | async">
+            <td>{{ player.name }} <small>{{ player.peerId }}</small></td>
+            <td>
+              <button *ngIf="player.peerId != networkService.peerId" type="button"
+                title="Start game with this player..." class="btn btn-success btn-xs"
+                (click)="playWith(player)">
+                <span class="glyphicon glyphicon-expand"></span> Play
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
 
     <div class="col-md-5">
       <h2>My field</h2>
       <button type="button" class="btn btn-primary" (click)="sendSomething()">
-        <span class="glyphicon glyphicon-flash"></span>Send something...
+        <span class="glyphicon glyphicon-flash"></span> Send something...
       </button>
     </div>
 
