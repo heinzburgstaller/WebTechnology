@@ -32,15 +32,18 @@
         <input type="text" class="form-control" value="Player" (change)="playerNameChange($event)">
       </div>
 
-      <div class="form-group">
+      <div *ngIf="networkService.connectedTo != null" class="form-group">
         <label for="dd">Connected to</label>
-        <span *ngIf="networkService.connectedTo != null">{{ networkService.connectedTo.name }}
+        <span>{{ networkService.connectedTo.name }}
           <small>{{ networkService.connectedTo.peerId}}</small>
         </span>
+        <button type="button" title="Disconnect from player..." class="btn btn-danger btn-sm"
+          (click)="disconnect()">
+          <span class="glyphicon glyphicon-remove-circle"></span> Disconnect
+        </button>
       </div>
 
-
-      <table class="table table-striped table-hover">
+      <table *ngIf="networkService.connectedTo == null" class="table table-striped table-hover">
         <thead>
           <tr>
             <th>Players</th>

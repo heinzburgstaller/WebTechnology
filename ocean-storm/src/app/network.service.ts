@@ -60,7 +60,10 @@ export class NetworkService {
 
   connectToEnemy(player) {
     this.playersRef.update(this.key, { isPlaying: true });
-    this.connectedTo = player;
+    this.enemyPeerId = player.peerId;
+    this.players.subscribe(players => {
+      this.connectedTo = players.find(p => p.peerId === this.enemyPeerId);
+    });
     this.enemyConnection = this.peer.connect(player.peerId);
     this.enemyConnection.on('data', (data) => {
       this.messageEmitter.emit(data);

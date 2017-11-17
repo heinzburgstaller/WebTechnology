@@ -37,6 +37,10 @@ export class AppComponent implements OnInit, OnDestroy {
     this.networkService.sendMessage({ message: 'Hello!!!', date: new Date() });
   }
 
+  disconnect() {
+
+  }
+
   @HostListener('window:beforeunload', ['$event'])
   public beforeunloadHandler($event) {
     this.networkService.unregister();
