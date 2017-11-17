@@ -43,7 +43,14 @@
         </button>
       </div>
 
-      <table *ngIf="networkService.connectedTo == null" class="table table-striped table-hover">
+      <alert *ngIf="(networkService.players | async)?.length <= 1"
+        type="info">
+        <strong>Sorry!</strong> No other players currently online ☹
+      </alert>
+
+
+      <table *ngIf="networkService.connectedTo == null && (networkService.players | async)?.length > 1"
+        class="table table-striped table-hover">
         <thead>
           <tr>
             <th>Players</th>
