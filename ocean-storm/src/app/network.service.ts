@@ -3,12 +3,12 @@ import { EventEmitter } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
 import { AngularFireDatabase, AngularFireList } from 'angularfire2/database';
 
+import { environment } from '../environments/environment';
+
 import 'rxjs/add/operator/map';
 
 @Injectable()
 export class NetworkService {
-
-  static readonly PEER_JS_API_KEY = 'bzwelzt8iihn0zfr';
 
   public peer;
   public peerId;
@@ -28,7 +28,7 @@ export class NetworkService {
       return changes.map(c => ({ key: c.payload.key, conn: null, ...c.payload.val() }));
     });
 
-    this.peer = new Peer({ key: NetworkService.PEER_JS_API_KEY });
+    this.peer = new Peer(environment.peerJS);
     this.peer.on('open', (id) => {
       this.peerId = id;
       this.key = this.addPlayer('Player', id, false);
