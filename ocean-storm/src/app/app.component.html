@@ -32,6 +32,13 @@
         <input type="text" class="form-control" value="Player" (change)="playerNameChange($event)">
       </div>
 
+      <div class="form-group">
+        <label for="dd">Connected to</label>
+        <span *ngIf="networkService.connectedTo != null">{{ networkService.connectedTo.name }} {{ networkService.connectedTo.peerId
+          }}</span>
+      </div>
+
+
       <table class="table table-striped table-hover">
         <thead>
           <tr>
@@ -40,8 +47,10 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let player of networkService.players | async">
-            <td>{{ player.name }} <small>{{ player.peerId }}</small></td>
+          <tr *ngFor="let player of networkService.players | async | playerPipe: networkService.peerId">
+            <td>{{ player.name }}
+              <small>{{ player.peerId }}</small>
+            </td>
             <td>
               <button *ngIf="player.peerId != networkService.peerId" type="button"
                 title="Start game with this player..." class="btn btn-success btn-xs"

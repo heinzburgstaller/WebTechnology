@@ -17,6 +17,8 @@ export class NetworkService {
   players: Observable<any[]>;
   private enemyConnection = null;
   private messageEmitter: EventEmitter<any> = new EventEmitter();
+  public connectedTo: any = null;
+  enemyPeerId: string = null;
 
   constructor(private db: AngularFireDatabase) {
     this.playersRef = db.list('players');
@@ -32,8 +34,13 @@ export class NetworkService {
     });
 
     this.peer.on('connection', (conn) => {
-      console.log(conn);
+      this.enemyPeerId = conn.peer;
+      this.players.subscribe(players => {
+        this.connectedTo = players.find(player => player.peerId === this.enemyPeerId);
+      });
+      console.log(this.connectedTo);
       this.enemyConnection = conn;
+      this.playersRef.update(this.key, { isPlaying: true });
 
       conn.on('data', (data) => {
         this.messageEmitter.emit(data);
@@ -51,8 +58,10 @@ export class NetworkService {
 
   }
 
-  connectToEnemy(peerId) {
-    this.enemyConnection = this.peer.connect(peerId);
+  connectToEnemy(player) {
+    this.playersRef.update(this.key, { isPlaying: true });
+    this.connectedTo = player;
+    this.enemyConnection = this.peer.connect(player.peerId);
     this.enemyConnection.on('data', (data) => {
       this.messageEmitter.emit(data);
     });

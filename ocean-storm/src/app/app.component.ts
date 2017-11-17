@@ -30,7 +30,7 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   playWith(player) {
-    this.networkService.connectToEnemy(player.peerId);
+    this.networkService.connectToEnemy(player);
   }
 
   sendSomething() {
