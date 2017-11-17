@@ -43,7 +43,7 @@
         </button>
       </div>
 
-      <alert *ngIf="(networkService.players | async | playerPipe: networkService.peerId)?.length == 0"
+      <alert *ngIf="(networkService.players | async | playerPipe: networkService.peerId)?.length == 0 && networkService.connectedTo == null"
         type="info">
         <strong>Sorry!</strong> No other players currently online ☹
       </alert>
