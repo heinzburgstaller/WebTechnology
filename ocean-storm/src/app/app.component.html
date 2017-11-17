@@ -75,7 +75,8 @@
 
     <div class="col-md-5">
       <h2>My field</h2>
-      <button type="button" class="btn btn-primary" (click)="sendSomething()">
+      <button *ngIf="networkService.connectedTo != null" type="button"
+        class="btn btn-primary" (click)="sendSomething()">
         <span class="glyphicon glyphicon-flash"></span> Send something...
       </button>
     </div>
