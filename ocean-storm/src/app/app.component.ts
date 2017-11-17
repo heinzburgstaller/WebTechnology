@@ -10,7 +10,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   subscription: any;
 
-  constructor(private networkService: NetworkService) {
+  constructor(public networkService: NetworkService) {
 
   }
 
