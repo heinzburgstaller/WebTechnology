@@ -34,8 +34,9 @@
 
       <div class="form-group">
         <label for="dd">Connected to</label>
-        <span *ngIf="networkService.connectedTo != null">{{ networkService.connectedTo.name }} {{ networkService.connectedTo.peerId
-          }}</span>
+        <span *ngIf="networkService.connectedTo != null">{{ networkService.connectedTo.name }}
+          <small>{{ networkService.connectedTo.peerId}}</small>
+        </span>
       </div>
 
 
