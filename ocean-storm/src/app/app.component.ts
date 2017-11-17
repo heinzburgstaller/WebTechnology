@@ -38,7 +38,7 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   disconnect() {
-
+    this.networkService.closeConnectionToEnemy();
   }
 
   @HostListener('window:beforeunload', ['$event'])

@@ -19,6 +19,7 @@ export class NetworkService {
   private messageEmitter: EventEmitter<any> = new EventEmitter();
   public connectedTo: any = null;
   enemyPeerId: string = null;
+  connectedToSubscription: any;
 
   constructor(private db: AngularFireDatabase) {
     this.playersRef = db.list('players');
@@ -35,15 +36,19 @@ export class NetworkService {
 
     this.peer.on('connection', (conn) => {
       this.enemyPeerId = conn.peer;
-      this.players.subscribe(players => {
+      this.connectedToSubscription = this.players.subscribe(players => {
         this.connectedTo = players.find(player => player.peerId === this.enemyPeerId);
       });
-      console.log(this.connectedTo);
       this.enemyConnection = conn;
       this.playersRef.update(this.key, { isPlaying: true });
 
       conn.on('data', (data) => {
         this.messageEmitter.emit(data);
+      });
+
+      conn.on('close', () => {
+        console.log('Connection closed');
+        this.cleanUpConnection();
       });
     });
 
@@ -61,12 +66,17 @@ export class NetworkService {
   connectToEnemy(player) {
     this.playersRef.update(this.key, { isPlaying: true });
     this.enemyPeerId = player.peerId;
-    this.players.subscribe(players => {
+    this.connectedToSubscription = this.players.subscribe(players => {
       this.connectedTo = players.find(p => p.peerId === this.enemyPeerId);
     });
     this.enemyConnection = this.peer.connect(player.peerId);
     this.enemyConnection.on('data', (data) => {
       this.messageEmitter.emit(data);
+    });
+
+    this.enemyConnection.on('close', () => {
+      console.log('Connection closed');
+      this.cleanUpConnection();
     });
   }
 
@@ -88,6 +98,18 @@ export class NetworkService {
 
   changePlayerName(newName: string) {
     this.updatePlayer(this.key, newName, false);
+  }
+
+  closeConnectionToEnemy() {
+    this.enemyConnection.close();
+  }
+
+  private cleanUpConnection() {
+    this.connectedToSubscription.unsubscribe();
+    this.enemyPeerId = null;
+    this.enemyConnection = null;
+    this.connectedTo = null;
+    this.playersRef.update(this.key, { isPlaying: false });
   }
 
   unregister() {
