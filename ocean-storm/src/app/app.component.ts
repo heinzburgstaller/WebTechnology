@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { NetworkService } from './network.service';
+import { GameFieldDrawer } from './GameFieldCanvas';
 
 @Component({
   selector: 'app-root',
@@ -19,6 +20,11 @@ export class AppComponent implements OnInit, OnDestroy {
       .subscribe(message => {
         console.log(message);
       });
+
+      var playerFieldDrawer = new GameFieldDrawer("playerCanvas");
+      var opponenGameFieldDrawer = new GameFieldDrawer("opponentCanvas");
+      
+      playerFieldDrawer.showTurnIndicator();
   }
 
   ngOnDestroy() {
