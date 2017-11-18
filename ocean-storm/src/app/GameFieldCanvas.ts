@@ -6,10 +6,11 @@ let rowsOfField: number = 10;
 
 
 enum CanvasFieldState {
-    Hidden = 1,
+    Empty = 1,
     ShotMiss,
     ShotHit,
-    ShotSunk,
+	ShotSunk,
+	OccupiedShown, // = Ship placed there
 }
 
 ////////////////////////
@@ -65,7 +66,7 @@ class CanvasGameTile extends CanvasElement {
 
 	constructor(frame: CanvasElementFrame) {
 		super(frame);
-        this.fieldState = CanvasFieldState.Hidden;
+        this.fieldState = CanvasFieldState.Empty;
     }
 }
 
@@ -190,23 +191,15 @@ export class GameFieldDrawer {
 	//////////////////
 	// Updating the fields
 
-	drawShipHitAtIndex(x, y, sunk) {
+	drawShipAtIndex(x, y,) {
 		var cell = this.cells[x][y];
 
-		if(!sunk) {
-			cell.fieldState = CanvasFieldState.ShotHit;
-			this.drawShipHit(cell);
-		} else {
-			cell.fieldState = CanvasFieldState.ShotSunk;
-			this.drawShipSunk(cell);
-		}
-
-		
+		this.drawShip(cell);
+		cell.fieldState = CanvasFieldState.OccupiedShown;
 	}
 
-	drawShipSunk(cell) {
-		this.drawShipHit(cell);
-		
+	drawShip(cell) {
+
 		this.ctx.fillStyle = "rgba(230, 0, 0, 0.25)";
         this.ctx.fillRect(
 			cell.frame.origin.x,
@@ -214,6 +207,40 @@ export class GameFieldDrawer {
             cell.frame.size.width, 
             cell.frame.size.height);
 	}
+
+	clearCelldAtIndex(x, y) {
+		var cell = this.cells[x][y];
+
+		this.clearCanvasElement(cell);
+		cell.fieldState = CanvasFieldState.Empty;
+	}
+
+	clearCanvasElement(element) {
+		this.ctx.clearRect(
+			element.frame.origin.x, 
+			element.frame.origin.y,
+			element.frame.size.width, 
+			element.frame.size.height);
+	}
+
+
+	drawShipHitAtIndex(x, y, sunk) {
+		var cell = this.cells[x][y];
+
+		if(!sunk) {
+			this.drawShipHit(cell);
+			cell.fieldState = CanvasFieldState.ShotHit;
+		} else {
+			this.drawShipSunk(cell);
+			cell.fieldState = CanvasFieldState.ShotSunk;
+		}		
+	}
+
+	drawShipSunk(cell) {
+		this.drawShipHit(cell);
+		this.drawShip(cell);
+	}
+
 
 	drawShipHit(cell) {
 
@@ -273,15 +300,10 @@ export class GameFieldDrawer {
 			var ctx = this.canvas.getContext("2d");
 			
 			if(this.hoverCell != null) {
-				ctx.clearRect(
-					this.hoverCell.frame.origin.x, 
-					this.hoverCell.frame.origin.y,
-					this.hoverCell.frame.size.width,
-					this.hoverCell.frame.size.height
-				);
+				this.clearCanvasElement(this.hoverCell);
 				
 				switch(this.hoverCell.fieldState) {
-					case CanvasFieldState.Hidden:
+					case CanvasFieldState.Empty:
 						break;
 					case CanvasFieldState.ShotMiss:
 						this.drawShipMiss(this.hoverCell);
@@ -337,9 +359,9 @@ export class GameFieldDrawer {
 		if(indices.positionIsInField) {
 			this.resetHoverCell();
 
-			// this.drawShipMissAtIndex(indices.x, indices.y);
+			this.drawShipMissAtIndex(indices.x, indices.y);
 			// this.drawShipHitAtIndex(indices.x, indices.y, false);
-			this.drawShipHitAtIndex(indices.x, indices.y, true);
+			//this.drawShipHitAtIndex(indices.x, indices.y, true);
 
 			this.addHoveringToCell(this.hoverCell);
 		}
