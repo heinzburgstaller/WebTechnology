@@ -72,27 +72,30 @@
         </tbody>
       </table>
     </div>
-
-    <div class="col-md-5">
-      <h2>My field</h2>
-
-      <canvas id="playerCanvas" width="400" height="400" style="border:1px solid #c3c3c3;">
-        Your browser does not support the canvas element.
-      </canvas>
-
-      <button *ngIf="networkService.connectedTo != null" type="button"
-        class="btn btn-primary" (click)="sendSomething()">
-        <span class="glyphicon glyphicon-flash"></span> Send something...
-      </button>
+    <div [hidden]="hideGameFields">
+      <div class="col-md-5">
+        <h2>My field</h2>
+  
+        <canvas id="playerCanvas" width="400" height="400" style="border:1px solid #c3c3c3;">
+          Your browser does not support the canvas element.
+        </canvas>
+        <div [hidden]="setupGameFieldFinished">
+          <button type="button"
+          class="btn btn-primary" (click)="finishedSetup()">
+          <span class="glyphicon glyphicon-flash"></span> GO!
+        </button>
+        </div>
+      </div>
+  
+      <div class="col-md-5">
+        <h2>Enemy field</h2>
+  
+        <canvas id="opponentCanvas" width="400" height="400" style="border:1px solid #c3c3c3;">
+          Your browser does not support the canvas element.
+        </canvas>
+      </div>
     </div>
-
-    <div class="col-md-5">
-      <h2>Enemy field</h2>
-
-      <canvas id="opponentCanvas" width="400" height="400" style="border:1px solid #c3c3c3;">
-        Your browser does not support the canvas element.
-      </canvas>
-    </div>
+   
 
   </div>
 

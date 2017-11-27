@@ -88,14 +88,18 @@ export class GameFieldDrawer {
     start: CanvasElementPosition;
 
     hoverCell: CanvasGameTile;
-    turnIndicatorFrame: CanvasElementFrame;
+	turnIndicatorFrame: CanvasElementFrame;
+	
+	mouseClickCallback: (click) => void;
 
     //////////////////////////////////////////////////////////////////////////////////////////
 	// Init:
 	//////////////////
 
-	constructor(canvasId) {
+	constructor(canvasId, mouseClickCallback) {
 	
+		this.mouseClickCallback = mouseClickCallback;
+
         this.canvas =  <HTMLCanvasElement>document.getElementById(canvasId);
         this.ctx = this.canvas.getContext("2d");
 		
@@ -355,16 +359,18 @@ export class GameFieldDrawer {
 
 	handleMouseClick(arg) {
 		let indices = this.getIndicesForMouseEvent(arg);
-
 		if(indices.positionIsInField) {
-			this.resetHoverCell();
+			this.mouseClickCallback(indices);
+
+			/*this.resetHoverCell();
 
 			this.drawShipMissAtIndex(indices.x, indices.y);
 			// this.drawShipHitAtIndex(indices.x, indices.y, false);
 			//this.drawShipHitAtIndex(indices.x, indices.y, true);
 
-			this.addHoveringToCell(this.hoverCell);
+			this.addHoveringToCell(this.hoverCell);*/
 		}
+		
 	}
 
 	handleMouseMove(arg) {

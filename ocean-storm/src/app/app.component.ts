@@ -10,44 +10,49 @@ import { GameFieldDrawer } from './GameFieldCanvas';
 })
 
 export class AppComponent implements OnInit, OnDestroy {
-
-  state: State;
+ 
+  state: State = State.setupGameField;
   subscription: any;
-  gameField: GameField;
+  playerGameField: GameField;
   beInLine: boolean;
+  hideGameFields: boolean = false;//TODO: change to true if callback is implemented
+  setupGameFieldFinished: Boolean = false;
+  playerFieldDrawer: GameFieldDrawer;
+  opponenGameFieldDrawer: GameFieldDrawer;
+
+  isOpponentReady: boolean = false;
 
   constructor(public networkService: NetworkService) {
-
-    this.gameField = new GameField();
-    this.gameField.field[0][0].index = 0;
-    this.gameField.field[0][1].index = 0;
-    this.gameField.field[0][2].index = 0;
-
-    const ship = new Ship();
-    ship.positions = [
-        new GameFieldPosition(0, 0), 
-        new GameFieldPosition(0, 1),
-        new GameFieldPosition(0, 2)
-      ];
-
-    this.gameField.ships = [ship];
-    this.state = State.waiting;
+    console.log("constructor");
   }
 
   ngOnInit() {
     this.subscription = this.networkService.getMessageEmitter()
-      .subscribe(message => {
-        console.log(message);
-      });
-
-      var playerFieldDrawer = new GameFieldDrawer("playerCanvas");
-      var opponenGameFieldDrawer = new GameFieldDrawer("opponentCanvas");
-      
-      playerFieldDrawer.showTurnIndicator();
+      .subscribe(this.parseMessage.bind(this));
+      this.playerGameField = new GameField();
+      this.playerFieldDrawer = new GameFieldDrawer("playerCanvas", (test) => {});
+      this.opponenGameFieldDrawer = new GameFieldDrawer("opponentCanvas", this.opponentGameFieldClickCallback);
+      this.setupInitialGameField();
   }
 
   ngOnDestroy() {
     this.subscription.unsubscribe();
+  }
+
+  parseMessage(message){
+    switch(message.type){
+      case "connected":
+        this.hideGameFields = false;
+        this.state = State.setupGameField;
+        break;
+      case "ready":
+        this.isOpponentReady = true;
+        this.setupGameFieldFinished = true;
+        break;
+      default:
+        console.log("wrong action structur -> no type defined : " + JSON.stringify(message));
+        break;
+    }
   }
 
   playerNameChange(event) {
@@ -56,15 +61,40 @@ export class AppComponent implements OnInit, OnDestroy {
 
   playWith(player) {
     this.networkService.connectToEnemy(player);
+    this.hideGameFields = false;
+    //TODO: put this in a Callback which is fired when the connection is established
+    /*this.sendToOpponent(
+      {
+        "type": 'connected',
+        "payload": '',
+      },
+      State.setupGameField
+    );*/
   }
 
-  sendToEnemy(action) {
-    this.state = State.waiting;
+  sendToOpponent(action, state = State.waiting) {
+    this.state = state;
     this.networkService.sendMessage(action);
   }
 
-  sendSomething(){
-    this.sendToEnemy({"test": "asdfwe"});
+  finishedSetup(){
+    if(this.isOpponentReady){
+      this.state = State.beInLine;
+      this.playerFieldDrawer.showTurnIndicator();
+    }
+    else{
+      const action = {
+        type: 'ready',
+        payload: '',
+      };
+      this.setupGameFieldFinished = true;
+      this.sendToOpponent(action);
+      this.opponenGameFieldDrawer.showTurnIndicator();
+    }
+  }
+
+  opponentGameFieldClickCallback(click) {
+    
   }
 
   disconnect() {
@@ -77,5 +107,80 @@ export class AppComponent implements OnInit, OnDestroy {
     return 'nothing';
   }
 
+  setupInitialGameField(){
+    const battleship = new Ship();
+    battleship.positions = [
+      new GameFieldPosition(0, 0),
+      new GameFieldPosition(1, 0),
+      new GameFieldPosition(2, 0),
+      new GameFieldPosition(3, 0),
+    ];
+
+    const cruiser = new Ship();
+    cruiser.positions = [
+      new GameFieldPosition(0, 1),
+      new GameFieldPosition(1, 1),
+      new GameFieldPosition(2, 1),
+    ];
+    const cruiser2 = new Ship();
+    cruiser2.positions = [
+      new GameFieldPosition(4, 1),
+      new GameFieldPosition(5, 1),
+      new GameFieldPosition(6, 1),
+    ];
+
+    const destroyer = new Ship();
+    destroyer.positions = [
+      new GameFieldPosition(0, 2),
+      new GameFieldPosition(1, 2),
+    ];
+    const destroyer2 = new Ship();
+    destroyer2.positions = [
+      new GameFieldPosition(4, 2),
+      new GameFieldPosition(5, 2),
+    ];
+    const destroyer3 = new Ship();
+    destroyer3.positions = [
+      new GameFieldPosition(7, 2),
+      new GameFieldPosition(8, 2),
+    ];
+
+    const submarine = new Ship();
+    submarine.positions = [
+      new GameFieldPosition(0, 3),
+    ];
+    const submarine2 = new Ship();
+    submarine2.positions = [
+      new GameFieldPosition(2, 3),
+    ];
+    const submarine3 = new Ship();
+    submarine3.positions = [
+      new GameFieldPosition(4, 3),
+    ];    
+    const submarine4 = new Ship();
+    submarine4.positions = [
+      new GameFieldPosition(6, 3),
+    ];
+
+    this.playerGameField.ships = [
+      battleship,
+      cruiser,
+      cruiser2,
+      destroyer,
+      destroyer2,
+      destroyer3,
+      submarine,
+      submarine2,
+      submarine3,
+      submarine4
+    ];
+
+    this.playerGameField.ships.forEach((ship, index) => {
+      for(const position of ship.positions){
+        this.playerGameField.field[position.x][position.y].index = index;
+        this.playerFieldDrawer.drawShipAtIndex(position.x, position.y);
+      }
+    });
+  }
 }
 
