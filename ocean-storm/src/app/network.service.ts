@@ -3,12 +3,12 @@ import { EventEmitter } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
 import { AngularFireDatabase, AngularFireList } from 'angularfire2/database';
 
+import { environment } from '../environments/environment';
+
 import 'rxjs/add/operator/map';
 
 @Injectable()
 export class NetworkService {
-
-  static readonly PEER_JS_API_KEY = 'bzwelzt8iihn0zfr';
 
   public peer;
   public peerId;
@@ -17,6 +17,9 @@ export class NetworkService {
   players: Observable<any[]>;
   private enemyConnection = null;
   private messageEmitter: EventEmitter<any> = new EventEmitter();
+  public connectedTo: any = null;
+  enemyPeerId: string = null;
+  connectedToSubscription: any;
 
   constructor(private db: AngularFireDatabase) {
     this.playersRef = db.list('players');
@@ -25,18 +28,27 @@ export class NetworkService {
       return changes.map(c => ({ key: c.payload.key, conn: null, ...c.payload.val() }));
     });
 
-    this.peer = new Peer({ key: NetworkService.PEER_JS_API_KEY });
+    this.peer = new Peer(environment.peerJS);
     this.peer.on('open', (id) => {
       this.peerId = id;
       this.key = this.addPlayer('Player', id, false);
     });
 
     this.peer.on('connection', (conn) => {
-      console.log(conn);
+      this.enemyPeerId = conn.peer;
+      this.connectedToSubscription = this.players.subscribe(players => {
+        this.connectedTo = players.find(player => player.peerId === this.enemyPeerId);
+      });
       this.enemyConnection = conn;
+      this.playersRef.update(this.key, { isPlaying: true });
 
       conn.on('data', (data) => {
         this.messageEmitter.emit(data);
+      });
+
+      conn.on('close', () => {
+        console.log('Connection closed');
+        this.cleanUpConnection();
       });
     });
 
@@ -51,10 +63,20 @@ export class NetworkService {
 
   }
 
-  connectToEnemy(peerId) {
-    this.enemyConnection = this.peer.connect(peerId);
+  connectToEnemy(player) {
+    this.playersRef.update(this.key, { isPlaying: true });
+    this.enemyPeerId = player.peerId;
+    this.connectedToSubscription = this.players.subscribe(players => {
+      this.connectedTo = players.find(p => p.peerId === this.enemyPeerId);
+    });
+    this.enemyConnection = this.peer.connect(player.peerId);
     this.enemyConnection.on('data', (data) => {
       this.messageEmitter.emit(data);
+    });
+
+    this.enemyConnection.on('close', () => {
+      console.log('Connection closed');
+      this.cleanUpConnection();
     });
   }
 
@@ -76,6 +98,18 @@ export class NetworkService {
 
   changePlayerName(newName: string) {
     this.updatePlayer(this.key, newName, false);
+  }
+
+  closeConnectionToEnemy() {
+    this.enemyConnection.close();
+  }
+
+  private cleanUpConnection() {
+    this.connectedToSubscription.unsubscribe();
+    this.enemyPeerId = null;
+    this.enemyConnection = null;
+    this.connectedTo = null;
+    this.playersRef.update(this.key, { isPlaying: false });
   }
 
   unregister() {

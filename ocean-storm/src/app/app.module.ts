@@ -5,6 +5,7 @@ import { AlertModule } from 'ngx-bootstrap/alert';
 
 import { AppComponent } from './app.component';
 import { NetworkService } from './network.service';
+import { PlayerPipe } from './pipes/player.pipe';
 
 import { AngularFireModule } from 'angularfire2';
 import { AngularFireDatabase } from 'angularfire2/database';
@@ -12,7 +13,8 @@ import { environment } from '../environments/environment';
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
+    PlayerPipe
   ],
   imports: [
     BrowserModule,

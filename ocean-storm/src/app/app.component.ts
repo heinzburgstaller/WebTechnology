@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { NetworkService } from './network.service';
 import { GameField, Ship, GameFieldPosition, State } from './models';
+import { GameFieldDrawer } from './GameFieldCanvas';
 
 @Component({
   selector: 'app-root',
@@ -15,8 +16,7 @@ export class AppComponent implements OnInit, OnDestroy {
   gameField: GameField;
   beInLine: boolean;
 
-  constructor(private networkService: NetworkService) {
-    this.state = State.setupGameField;
+  constructor(public networkService: NetworkService) {
 
     this.gameField = new GameField();
     this.gameField.field[0][0].index = 0;
@@ -37,14 +37,13 @@ export class AppComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.subscription = this.networkService.getMessageEmitter()
       .subscribe(message => {
-        console.log("received msg: " + JSON.stringify(message));
-        this.state = State.beInLine;
-        const action = {
-          type: 'changeState',
-          payload: State.waiting,
-        };
-        this.sendToEnemy(action);
+        console.log(message);
       });
+
+      var playerFieldDrawer = new GameFieldDrawer("playerCanvas");
+      var opponenGameFieldDrawer = new GameFieldDrawer("opponentCanvas");
+      
+      playerFieldDrawer.showTurnIndicator();
   }
 
   ngOnDestroy() {
@@ -56,7 +55,7 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   playWith(player) {
-    this.networkService.connectToEnemy(player.peerId);
+    this.networkService.connectToEnemy(player);
   }
 
   sendToEnemy(action) {
@@ -66,6 +65,10 @@ export class AppComponent implements OnInit, OnDestroy {
 
   sendSomething(){
     this.sendToEnemy({"test": "asdfwe"});
+  }
+
+  disconnect() {
+    this.networkService.closeConnectionToEnemy();
   }
 
   @HostListener('window:beforeunload', ['$event'])

@@ -32,7 +32,24 @@
         <input type="text" class="form-control" value="Player" (change)="playerNameChange($event)">
       </div>
 
-      <table class="table table-striped table-hover">
+      <div *ngIf="networkService.connectedTo != null" class="form-group">
+        <label for="dd">Connected to</label>
+        <span>{{ networkService.connectedTo.name }}
+          <small>{{ networkService.connectedTo.peerId}}</small>
+        </span>
+        <button type="button" title="Disconnect from player..." class="btn btn-danger btn-sm"
+          (click)="disconnect()">
+          <span class="glyphicon glyphicon-remove-circle"></span> Disconnect
+        </button>
+      </div>
+
+      <alert *ngIf="(networkService.players | async | playerPipe: networkService.peerId)?.length == 0 && networkService.connectedTo == null"
+        type="info">
+        <strong>Sorry!</strong> No other players currently online ☹
+      </alert>
+
+      <table *ngIf="networkService.connectedTo == null && (networkService.players | async | playerPipe: networkService.peerId)?.length >= 1"
+        class="table table-striped table-hover">
         <thead>
           <tr>
             <th>Players</th>
@@ -40,8 +57,10 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let player of networkService.players | async">
-            <td>{{ player.name }} <small>{{ player.peerId }}</small></td>
+          <tr *ngFor="let player of networkService.players | async | playerPipe: networkService.peerId">
+            <td>{{ player.name }}
+              <small>{{ player.peerId }}</small>
+            </td>
             <td>
               <button *ngIf="player.peerId != networkService.peerId" type="button"
                 title="Start game with this player..." class="btn btn-success btn-xs"
@@ -56,13 +75,23 @@
 
     <div class="col-md-5">
       <h2>My field</h2>
-      <button type="button" class="btn btn-primary" (click)="sendSomething()">
+
+      <canvas id="playerCanvas" width="400" height="400" style="border:1px solid #c3c3c3;">
+        Your browser does not support the canvas element.
+      </canvas>
+
+      <button *ngIf="networkService.connectedTo != null" type="button"
+        class="btn btn-primary" (click)="sendSomething()">
         <span class="glyphicon glyphicon-flash"></span> Send something...
       </button>
     </div>
 
     <div class="col-md-5">
       <h2>Enemy field</h2>
+
+      <canvas id="opponentCanvas" width="400" height="400" style="border:1px solid #c3c3c3;">
+        Your browser does not support the canvas element.
+      </canvas>
     </div>
 
   </div>
