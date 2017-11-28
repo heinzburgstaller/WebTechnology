@@ -6,6 +6,7 @@ import { AngularFireDatabase, AngularFireList } from 'angularfire2/database';
 import { environment } from '../environments/environment';
 
 import 'rxjs/add/operator/map';
+import { Message } from './models/message';
 
 @Injectable()
 export class NetworkService {
@@ -16,7 +17,7 @@ export class NetworkService {
   playersRef: AngularFireList<any>;
   players: Observable<any[]>;
   private enemyConnection = null;
-  private messageEmitter: EventEmitter<any> = new EventEmitter();
+  private messageEmitter: EventEmitter<Message> = new EventEmitter();
   public connectedTo: any = null;
   enemyPeerId: string = null;
   connectedToSubscription: any;
@@ -38,6 +39,7 @@ export class NetworkService {
       this.enemyPeerId = conn.peer;
       this.connectedToSubscription = this.players.subscribe(players => {
         this.connectedTo = players.find(player => player.peerId === this.enemyPeerId);
+        this.messageEmitter.emit(new Message(Message.TYPE_CONNECTION_ESTABLISHED));
       });
       this.enemyConnection = conn;
       this.playersRef.update(this.key, { isPlaying: true });
@@ -68,6 +70,7 @@ export class NetworkService {
     this.enemyPeerId = player.peerId;
     this.connectedToSubscription = this.players.subscribe(players => {
       this.connectedTo = players.find(p => p.peerId === this.enemyPeerId);
+      this.messageEmitter.emit(new Message(Message.TYPE_CONNECTION_ESTABLISHED));
     });
     this.enemyConnection = this.peer.connect(player.peerId);
     this.enemyConnection.on('data', (data) => {
@@ -116,7 +119,7 @@ export class NetworkService {
     this.deletePlayer(this.key);
   }
 
-  getMessageEmitter(): EventEmitter<any> {
+  getMessageEmitter(): EventEmitter<Message> {
     return this.messageEmitter;
   }
 
