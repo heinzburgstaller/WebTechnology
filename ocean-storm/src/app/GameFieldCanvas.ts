@@ -90,6 +90,8 @@ export class GameFieldDrawer {
     hoverCell: CanvasGameTile;
 	turnIndicatorFrame: CanvasElementFrame;
 	
+	hoveringEnabled: Boolean;
+
 	mouseClickCallback: (click) => void;
 
     //////////////////////////////////////////////////////////////////////////////////////////
@@ -107,6 +109,8 @@ export class GameFieldDrawer {
 			this.drawGameGrid();
 			this.initCells();
 		}
+
+		this.hoveringEnabled = true;
 		
         this.canvas.addEventListener('mousemove', this.handleMouseMove.bind(this), false);
 		this.canvas.addEventListener('mouseout', this.handleMouseOut.bind(this), false);
@@ -289,6 +293,10 @@ export class GameFieldDrawer {
 
 	// Hovering
 
+	setHoveringEnabled(hovering: Boolean) {
+		this.hoveringEnabled = hovering;
+	} 
+
 	addHoveringToCell(cell) {
 
 		this.ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
@@ -317,6 +325,9 @@ export class GameFieldDrawer {
 						break;
 					case CanvasFieldState.ShotSunk:
 						this.drawShipSunk(this.hoverCell);
+						break;
+					case CanvasFieldState.OccupiedShown:
+						this.drawShip(this.hoverCell);
 						break;
 				}
 			}
@@ -377,7 +388,7 @@ export class GameFieldDrawer {
 	
 		let indices = this.getIndicesForMouseEvent(arg);
 				
-		if(indices.positionIsInField) {
+		if(indices.positionIsInField && this.hoveringEnabled) {
 			var potentialCell = this.cells[indices.x][indices.y];
 
 			if(this.hoverCell != potentialCell) {
