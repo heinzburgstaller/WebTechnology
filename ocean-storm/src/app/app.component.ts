@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { NetworkService } from './network.service';
-import { GameField, Ship, GameFieldPosition, State } from './models';
+import { GameField, Ship, GameFieldPosition, State, Placeholder } from './models';
 import { GameFieldDrawer } from './GameFieldCanvas';
 
 @Component({
@@ -11,6 +11,7 @@ import { GameFieldDrawer } from './GameFieldCanvas';
 
 export class AppComponent implements OnInit, OnDestroy {
  
+  placeholder: Placeholder = Placeholder.standard;
   state: State = State.setupGameField;
   subscription: any;
   playerGameField: GameField;
@@ -41,7 +42,6 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   parseMessage(message){
-    console.log("mesg with type '" + message.type + "' reached");
     switch(message.type){
       case "Connected":
         this.hideGameFields = false;
@@ -66,7 +66,9 @@ export class AppComponent implements OnInit, OnDestroy {
         }
         break;
       case "GameEnd":
+        this.placeholder = Placeholder.win;
         this.reset();
+        this.disconnect();
         break;
       default:
         console.log("wrong action structur -> no type defined : " + JSON.stringify(message));
@@ -95,7 +97,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.changeStateTo(state);
     this.networkService.sendMessage(action);
     if(action.type === "GameEnd"){
-      setTimeout(() => this.reset(), 20000);//remove this hack later 
+     this.reset();
     }
   }
 
@@ -118,13 +120,14 @@ export class AppComponent implements OnInit, OnDestroy {
 
   reset(){
     //this.HideGameFields = true -> uncomment if callback is implemented
-    this.disconnect();
     this.setupGameFieldFinished = false;
     this.isOpponentReady = false;
     this.playerGameField = new GameField();
-    this.playerFieldDrawer = new GameFieldDrawer("playerCanvas", (test) => {});//clear gamefield instead
-    this.opponenGameFieldDrawer = new GameFieldDrawer("opponentCanvas", this.opponentGameFieldClickCallback.bind(this)); //same here
+    this.playerFieldDrawer.clearField();
+    this.opponenGameFieldDrawer.clearField();
     this.opponenGameFieldDrawer.setHoveringEnabled(false);
+    this.playerFieldDrawer.hideTurnIndicator();
+    this.opponenGameFieldDrawer.hideTurnIndicator();
     this.setupInitialGameField();
   }
 
@@ -173,12 +176,13 @@ export class AppComponent implements OnInit, OnDestroy {
         if(gameHasEnded){
           console.log("game has ended!!!");
           action.type = "GameEnd";
+          this.placeholder = Placeholder.loose;
         }
         else {
           action.type = "ShipSunk";
           action.payload = JSON.stringify(this.playerGameField.ships[index].positions);
           for(const pos of this.playerGameField.ships[index].positions){
-            this.playerFieldDrawer.drawShipHitAtIndex(pos.x, pos.y, true);
+            this.playerFieldDrawer.drawShipHitAtIndexWithShipIndex(pos.x, pos.y, true, index);
           }
         }
       }
@@ -282,21 +286,21 @@ export class AppComponent implements OnInit, OnDestroy {
 
     this.playerGameField.ships = [
       battleship,
-      // cruiser,
-      // cruiser2,
-      // destroyer,
-      // destroyer2,
-      // destroyer3,
-      // submarine,
-      // submarine2,
-      // submarine3,
-      // submarine4
+      cruiser,
+      cruiser2,
+      destroyer,
+      destroyer2,
+      destroyer3,
+      submarine,
+      submarine2,
+      submarine3,
+      submarine4
     ];
 
     this.playerGameField.ships.forEach((ship, index) => {
       for(const position of ship.positions){
         this.playerGameField.field[position.x][position.y].index = index;
-        this.playerFieldDrawer.drawShipAtIndex(position.x, position.y);
+        this.playerFieldDrawer.drawShipAtIndex(position.x, position.y, index);
       }
     });
   }
