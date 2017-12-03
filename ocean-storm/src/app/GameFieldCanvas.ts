@@ -262,15 +262,15 @@ export class GameFieldDrawer {
 		var cell = this.cells[x][y];
 		cell.shipIndex = shipIndex
 		if(!sunk) {
-			this.drawShipHit(cell);
 			cell.fieldState = CanvasFieldState.ShotHit;
-		} else if(cell.fieldState == CanvasFieldState.Empty) {
-			this.drawShip(cell);
+			this.drawShipHit(cell);
+		} else if(cell.fieldState == CanvasFieldState.Empty || cell.fieldState == CanvasFieldState.ShotHit) {
 			cell.fieldState = CanvasFieldState.ShotSunk;
+			this.drawShip(cell);
 		} else {
+			cell.fieldState = CanvasFieldState.OccupiedHit;
 			this.drawShip(cell);
 			this.drawShipHit(cell);
-			cell.fieldState = CanvasFieldState.OccupiedHit;
 		}
 	}
 
