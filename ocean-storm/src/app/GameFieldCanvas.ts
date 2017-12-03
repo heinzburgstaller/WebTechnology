@@ -222,6 +222,7 @@ export class GameFieldDrawer {
 
 	private drawShip(cell) {
 
+		this.clearCanvasElement(cell);
 		if(cell.shipIndex == -1 || cell.shipIndex >= shipColors.length) {
 			this.ctx.fillStyle = "rgba(230, 0, 0, 0.25)";
 		} else {
@@ -256,7 +257,7 @@ export class GameFieldDrawer {
 
 	drawShipHitAtIndexWithShipIndex(x, y, sunk, shipIndex) {
 		var cell = this.cells[x][y];
-
+		cell.shipIndex = shipIndex
 		if(!sunk) {
 			this.drawShipHit(cell);
 			cell.fieldState = CanvasFieldState.ShotHit;
@@ -269,7 +270,8 @@ export class GameFieldDrawer {
 
 	drawShipHit(cell) {
 
-		this.ctx.strokeStyle= "#FF0000";
+		this.clearCanvasElement(cell);
+		this.ctx.strokeStyle = "#FF0000";
         this.ctx.lineWidth = 2;
 
 		this.ctx.beginPath();
