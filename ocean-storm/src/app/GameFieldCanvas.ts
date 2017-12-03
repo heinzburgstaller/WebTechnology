@@ -277,7 +277,9 @@ export class GameFieldDrawer {
 
 	drawShipHit(cell) {
 
-		this.clearCanvasElement(cell);
+		if(cell.fieldState == CanvasFieldState.ShotHit) {
+			this.clearCanvasElement(cell);
+		}
 		this.ctx.strokeStyle = "#FF0000";
         this.ctx.lineWidth = 2;
 
