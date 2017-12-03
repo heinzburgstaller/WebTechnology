@@ -14,6 +14,8 @@ let shipColors: string[] = [
 	"rgba(167, 170, 078, 1)",
 	"rgba(097, 170, 078, 1)",
 	"rgba(127, 078, 169, 1)",
+	"rgba(010, 150, 210, 1)",
+	"rgba(190, 053, 144, 1)"
 ];
 
 enum CanvasFieldState {
