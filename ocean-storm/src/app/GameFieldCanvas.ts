@@ -5,6 +5,17 @@ let columnsOfField: number = 10;
 let rowsOfField: number = 10;
 
 
+let shipColors: string[] = [
+	"rgba(196, 104, 084, 1)",
+	"rgba(142, 196, 084, 1)",
+	"rgba(068, 163, 139, 1)",
+	"rgba(085, 097, 193, 1)",
+	"rgba(163, 107, 162, 1)",
+	"rgba(167, 170, 078, 1)",
+	"rgba(097, 170, 078, 1)",
+	"rgba(127, 078, 169, 1)",
+];
+
 enum CanvasFieldState {
     Empty = 1,
     ShotMiss,
@@ -63,10 +74,12 @@ class CanvasElement {
 class CanvasGameTile extends CanvasElement {
 
 	fieldState: CanvasFieldState;
+	shipIndex: number
 
 	constructor(frame: CanvasElementFrame) {
 		super(frame);
-        this.fieldState = CanvasFieldState.Empty;
+		this.fieldState = CanvasFieldState.Empty;
+		this.shipIndex = -1;
     }
 }
 
@@ -199,7 +212,7 @@ export class GameFieldDrawer {
 	//////////////////
 	// Updating the fields
 
-	drawShipAtIndex(x, y,) {
+	drawShipAtIndex(x, y) {
 		var cell = this.cells[x][y];
 
 		this.drawShip(cell);
@@ -208,7 +221,11 @@ export class GameFieldDrawer {
 
 	drawShip(cell) {
 
-		this.ctx.fillStyle = "rgba(230, 0, 0, 0.25)";
+		if(cell.shipIndex == -1 || cell.shipIndex >= shipColors.length) {
+			this.ctx.fillStyle = "rgba(230, 0, 0, 0.25)";
+		} else {
+			this.ctx.fillStyle = shipColors[cell.shipIndex];
+		}
         this.ctx.fillRect(
 			cell.frame.origin.x,
             cell.frame.origin.y,
@@ -233,20 +250,19 @@ export class GameFieldDrawer {
 
 
 	drawShipHitAtIndex(x, y, sunk) {
+		this.drawShipHitAtIndexWithShipIndex(x, y, sunk, 0)
+	}
+
+	drawShipHitAtIndexWithShipIndex(x, y, sunk, shipIndex) {
 		var cell = this.cells[x][y];
 
 		if(!sunk) {
 			this.drawShipHit(cell);
 			cell.fieldState = CanvasFieldState.ShotHit;
 		} else {
-			this.drawShipSunk(cell);
+			this.drawShip(cell);
 			cell.fieldState = CanvasFieldState.ShotSunk;
-		}		
-	}
-
-	drawShipSunk(cell) {
-		this.drawShipHit(cell);
-		this.drawShip(cell);
+		}	
 	}
 
 
@@ -290,6 +306,19 @@ export class GameFieldDrawer {
         this.ctx.stroke();
 	}
 
+	public clearField() {
+		for (var x = 0; x < columnsOfField; x++) {
+			for (var y = 0; y < rowsOfField; y++) { 
+				var cell = this.cells[x][y];
+
+				if(cell.fieldState != CanvasFieldState.Empty) {
+					this.clearCanvasElement(cell);
+					cell.fieldState = CanvasFieldState.Empty;
+					cell.shipIndex = -1;
+				}
+			}
+		}
+	}
 
 	// Hovering
 
@@ -324,7 +353,7 @@ export class GameFieldDrawer {
 						this.drawShipHit(this.hoverCell);
 						break;
 					case CanvasFieldState.ShotSunk:
-						this.drawShipSunk(this.hoverCell);
+						this.drawShip(this.hoverCell);
 						break;
 					case CanvasFieldState.OccupiedShown:
 						this.drawShip(this.hoverCell);
@@ -370,16 +399,10 @@ export class GameFieldDrawer {
 
 	handleMouseClick(arg) {
 		let indices = this.getIndicesForMouseEvent(arg);
-		if(indices.positionIsInField) {
+		var cell = this.cells[indices.x][indices.y];
+		
+		if(indices.positionIsInField && cell.fieldState == CanvasFieldState.Empty) {
 			this.mouseClickCallback(indices);
-
-			/*this.resetHoverCell();
-
-			this.drawShipMissAtIndex(indices.x, indices.y);
-			// this.drawShipHitAtIndex(indices.x, indices.y, false);
-			//this.drawShipHitAtIndex(indices.x, indices.y, true);
-
-			this.addHoveringToCell(this.hoverCell);*/
 		}
 		
 	}
