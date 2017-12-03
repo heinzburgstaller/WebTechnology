@@ -23,7 +23,8 @@ enum CanvasFieldState {
     ShotMiss,
     ShotHit,
 	ShotSunk,
-	OccupiedShown, // = Ship placed there
+	OccupiedUndamaged, // = Ship placed there
+	OccupiedHit,
 }
 
 ////////////////////////
@@ -218,7 +219,7 @@ export class GameFieldDrawer {
 		var cell = this.cells[x][y];
 		cell.shipIndex = shipIndex;
 		this.drawShip(cell);
-		cell.fieldState = CanvasFieldState.OccupiedShown;
+		cell.fieldState = CanvasFieldState.OccupiedUndamaged;
 	}
 
 
@@ -263,10 +264,14 @@ export class GameFieldDrawer {
 		if(!sunk) {
 			this.drawShipHit(cell);
 			cell.fieldState = CanvasFieldState.ShotHit;
-		} else {
+		} else if(cell.fieldState == CanvasFieldState.Empty) {
 			this.drawShip(cell);
 			cell.fieldState = CanvasFieldState.ShotSunk;
-		}	
+		} else {
+			this.drawShip(cell);
+			this.drawShipHit(cell);
+			cell.fieldState = CanvasFieldState.OccupiedHit;
+		}
 	}
 
 
@@ -360,8 +365,12 @@ export class GameFieldDrawer {
 					case CanvasFieldState.ShotSunk:
 						this.drawShip(this.hoverCell);
 						break;
-					case CanvasFieldState.OccupiedShown:
+					case CanvasFieldState.OccupiedUndamaged:
 						this.drawShip(this.hoverCell);
+						break;
+					case CanvasFieldState.OccupiedHit:
+						this.drawShip(this.hoverCell);
+						this.drawShipHit(this.hoverCell);
 						break;
 				}
 			}
