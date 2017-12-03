@@ -212,14 +212,15 @@ export class GameFieldDrawer {
 	//////////////////
 	// Updating the fields
 
-	drawShipAtIndex(x, y) {
+	public drawShipAtIndex(x, y, shipIndex) {
 		var cell = this.cells[x][y];
-
+		cell.shipIndex = shipIndex;
 		this.drawShip(cell);
 		cell.fieldState = CanvasFieldState.OccupiedShown;
 	}
 
-	drawShip(cell) {
+
+	private drawShip(cell) {
 
 		if(cell.shipIndex == -1 || cell.shipIndex >= shipColors.length) {
 			this.ctx.fillStyle = "rgba(230, 0, 0, 0.25)";
