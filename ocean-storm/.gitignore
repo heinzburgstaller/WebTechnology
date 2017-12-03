@@ -16,6 +16,8 @@
 *.launch
 .settings/
 *.sublime-workspace
+.vscode/settings.json
+
 
 # IDE - VSCode
 .vscode/*
@@ -32,6 +34,7 @@
 npm-debug.log
 testem.log
 /typings
+../.DS_Store
 
 # e2e
 /e2e/*.js

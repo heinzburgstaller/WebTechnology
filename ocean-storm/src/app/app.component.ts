@@ -31,7 +31,8 @@ export class AppComponent implements OnInit, OnDestroy {
       .subscribe(this.parseMessage.bind(this));
       this.playerGameField = new GameField();
       this.playerFieldDrawer = new GameFieldDrawer("playerCanvas", (test) => {});
-      this.opponenGameFieldDrawer = new GameFieldDrawer("opponentCanvas", this.opponentGameFieldClickCallback);
+      this.opponenGameFieldDrawer = new GameFieldDrawer("opponentCanvas", this.opponentGameFieldClickCallback.bind(this));
+      this.opponenGameFieldDrawer.setHoveringEnabled(false);
       this.setupInitialGameField();
   }
 
@@ -40,14 +41,32 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   parseMessage(message){
+    console.log("mesg with type '" + message.type + "' reached");
     switch(message.type){
-      case "connected":
+      case "Connected":
         this.hideGameFields = false;
         this.state = State.setupGameField;
         break;
-      case "ready":
+      case "Ready":
         this.isOpponentReady = true;
-        this.setupGameFieldFinished = true;
+        break;
+      case "RequestHit":
+        const pos = message.payload;
+        this.handleHitRequest(pos);
+        break;
+      case "Hit":
+        this.opponenGameFieldDrawer.drawShipHitAtIndex(message.payload.x, message.payload.y, false);
+        break;
+      case "Miss":
+        this.opponenGameFieldDrawer.drawShipMissAtIndex(message.payload.x, message.payload.y);
+        break;
+      case "ShipSunk":
+        for(const pos of JSON.parse(message.payload)){
+          this.opponenGameFieldDrawer.drawShipHitAtIndex(pos.x, pos.y, true);
+        }
+        break;
+      case "GameEnd":
+        this.reset();
         break;
       default:
         console.log("wrong action structur -> no type defined : " + JSON.stringify(message));
@@ -65,7 +84,7 @@ export class AppComponent implements OnInit, OnDestroy {
     //TODO: put this in a Callback which is fired when the connection is established
     /*this.sendToOpponent(
       {
-        "type": 'connected',
+        "type": 'Connected',
         "payload": '',
       },
       State.setupGameField
@@ -73,18 +92,22 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   sendToOpponent(action, state = State.waiting) {
-    this.state = state;
+    this.changeStateTo(state);
     this.networkService.sendMessage(action);
+    if(action.type === "GameEnd"){
+      setTimeout(() => this.reset(), 20000);//remove this hack later 
+    }
   }
 
   finishedSetup(){
+    this.playerFieldDrawer.setHoveringEnabled(false);
     if(this.isOpponentReady){
-      this.state = State.beInLine;
-      this.playerFieldDrawer.showTurnIndicator();
+      this.changeStateTo(State.beInLine);
+      this.setupGameFieldFinished = true;
     }
     else{
       const action = {
-        type: 'ready',
+        type: 'Ready',
         payload: '',
       };
       this.setupGameFieldFinished = true;
@@ -93,8 +116,101 @@ export class AppComponent implements OnInit, OnDestroy {
     }
   }
 
+  reset(){
+    //this.HideGameFields = true -> uncomment if callback is implemented
+    this.disconnect();
+    this.setupGameFieldFinished = false;
+    this.isOpponentReady = false;
+    this.playerGameField = new GameField();
+    this.playerFieldDrawer = new GameFieldDrawer("playerCanvas", (test) => {});//clear gamefield instead
+    this.opponenGameFieldDrawer = new GameFieldDrawer("opponentCanvas", this.opponentGameFieldClickCallback.bind(this)); //same here
+    this.opponenGameFieldDrawer.setHoveringEnabled(false);
+    this.setupInitialGameField();
+  }
+
   opponentGameFieldClickCallback(click) {
-    
+    if(this.state === State.beInLine){
+      const action = {
+        type: 'RequestHit',
+        payload: {
+          x: click.x,
+          y: click.y,
+        }
+      };
+      this.sendToOpponent(action);
+    }
+  }
+
+  changeStateTo(state: State){
+    switch(state){
+      case State.beInLine:
+        this.playerFieldDrawer.showTurnIndicator();
+        this.opponenGameFieldDrawer.hideTurnIndicator();
+        this.opponenGameFieldDrawer.setHoveringEnabled(true);
+        this.state = state;
+        break;
+      case State.waiting:
+        this.playerFieldDrawer.hideTurnIndicator();
+        this.opponenGameFieldDrawer.showTurnIndicator();
+        this.opponenGameFieldDrawer.setHoveringEnabled(false);
+        this.state = state;
+        break;
+      default:
+        console.log("Something went wrong while state changing to: " + state);
+    }
+  }
+
+  handleHitRequest(pos){
+    const index = this.playerGameField.field[pos.x][pos.y].index;
+    const action = {
+      type: "",
+      payload: undefined,
+    };
+    if(index !== -1){//hit 
+      const isSunk = this.playerGameField.ships[index].setPosToHitted(pos);
+      if(isSunk){//ship is sunk
+        const gameHasEnded = this.checkGameEnds();
+        if(gameHasEnded){
+          console.log("game has ended!!!");
+          action.type = "GameEnd";
+        }
+        else {
+          action.type = "ShipSunk";
+          action.payload = JSON.stringify(this.playerGameField.ships[index].positions);
+          for(const pos of this.playerGameField.ships[index].positions){
+            this.playerFieldDrawer.drawShipHitAtIndex(pos.x, pos.y, true);
+          }
+        }
+      }
+      else{// normal hit
+        action.type = "Hit";
+        action.payload = {
+          x: pos.x,
+          y: pos.y
+        };
+      }
+      this.playerFieldDrawer.drawShipHitAtIndex(pos.x, pos.y, false);
+    }
+    else{//miss
+      action.type = "Miss";
+      action.payload = {
+        x: pos.x,
+        y: pos.y
+      };
+      this.playerFieldDrawer.drawShipMissAtIndex(pos.x, pos.y);
+    }
+    this.sendToOpponent(action, State.beInLine);
+  }
+
+  checkGameEnds(){
+    var allShipsAreSunk = true;
+    for(const ship of this.playerGameField.ships){
+      if(!ship.isSunk){
+        allShipsAreSunk = false;
+        break;
+      }
+    }
+    return allShipsAreSunk;
   }
 
   disconnect() {
@@ -108,6 +224,8 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   setupInitialGameField(){
+    this.state = State.setupGameField;
+
     const battleship = new Ship();
     battleship.positions = [
       new GameFieldPosition(0, 0),
@@ -164,15 +282,15 @@ export class AppComponent implements OnInit, OnDestroy {
 
     this.playerGameField.ships = [
       battleship,
-      cruiser,
-      cruiser2,
-      destroyer,
-      destroyer2,
-      destroyer3,
-      submarine,
-      submarine2,
-      submarine3,
-      submarine4
+      // cruiser,
+      // cruiser2,
+      // destroyer,
+      // destroyer2,
+      // destroyer3,
+      // submarine,
+      // submarine2,
+      // submarine3,
+      // submarine4
     ];
 
     this.playerGameField.ships.forEach((ship, index) => {
