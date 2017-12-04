@@ -55,14 +55,15 @@ export class AppComponent implements OnInit, OnDestroy {
         this.handleHitRequest(pos);
         break;
       case "Hit":
-        this.opponenGameFieldDrawer.drawShipHitAtIndex(message.payload.x, message.payload.y, false);
+        this.opponenGameFieldDrawer.drawShipHitAtIndex(message.payload.x, message.payload.y, false,message.payload.index);
         break;
       case "Miss":
         this.opponenGameFieldDrawer.drawShipMissAtIndex(message.payload.x, message.payload.y);
         break;
       case "ShipSunk":
-        for(const pos of JSON.parse(message.payload)){
-          this.opponenGameFieldDrawer.drawShipHitAtIndex(pos.x, pos.y, true);
+        const payload = JSON.parse(message.payload);
+        for(const pos of JSON.parse(message.payload).ships){
+          this.opponenGameFieldDrawer.drawShipHitAtIndex(pos.x, pos.y, true, payload.index);
         }
         break;
       case "GameEnd":
@@ -180,9 +181,13 @@ export class AppComponent implements OnInit, OnDestroy {
         }
         else {
           action.type = "ShipSunk";
-          action.payload = JSON.stringify(this.playerGameField.ships[index].positions);
+          action.payload = JSON.stringify({ 
+            ships: this.playerGameField.ships[index].positions,
+            index: index
+          });
+          console.log(index);
           for(const pos of this.playerGameField.ships[index].positions){
-            this.playerFieldDrawer.drawShipHitAtIndexWithShipIndex(pos.x, pos.y, true, index);
+            this.playerFieldDrawer.drawShipHitAtIndex(pos.x, pos.y, true, index);
           }
         }
       }
@@ -190,10 +195,11 @@ export class AppComponent implements OnInit, OnDestroy {
         action.type = "Hit";
         action.payload = {
           x: pos.x,
-          y: pos.y
+          y: pos.y,
+          index: index
         };
+        this.playerFieldDrawer.drawShipHitAtIndex(pos.x, pos.y, false, index);
       }
-      this.playerFieldDrawer.drawShipHitAtIndex(pos.x, pos.y, false);
     }
     else{//miss
       action.type = "Miss";
