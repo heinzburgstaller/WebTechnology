@@ -254,11 +254,7 @@ export class GameFieldDrawer {
 	}
 
 
-	drawShipHitAtIndex(x, y, sunk) {
-		this.drawShipHitAtIndexWithShipIndex(x, y, sunk, 0)
-	}
-
-	drawShipHitAtIndexWithShipIndex(x, y, sunk, shipIndex) {
+	drawShipHitAtIndex(x, y, sunk, shipIndex) {
 		var cell = this.cells[x][y];
 		cell.shipIndex = shipIndex
 		if(cell.fieldState == CanvasFieldState.OccupiedUndamaged || cell.fieldState == CanvasFieldState.OccupiedHit) {
