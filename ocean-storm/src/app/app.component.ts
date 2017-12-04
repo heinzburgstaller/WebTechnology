@@ -198,7 +198,6 @@ export class AppComponent implements OnInit, OnDestroy {
         };
         this.playerFieldDrawer.drawShipHitAtIndex(pos.x, pos.y, false, index);
       }
-      this.playerFieldDrawer.drawShipHitAtIndex(pos.x, pos.y, false);
     } else {// miss
       action.type = 'Miss';
       action.payload = {
