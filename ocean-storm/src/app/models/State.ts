@@ -1,8 +1,8 @@
-enum State{
-  setupGameField = "setupGameField",
-  beInLine = "beInLine",
-  waiting = "waiting"
-};
+enum State {
+  setupGameField = 'setupGameField',
+  beInLine = 'beInLine',
+  waiting = 'waiting'
+}
 
 
 

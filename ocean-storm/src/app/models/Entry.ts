@@ -1,6 +1,6 @@
-export default class Entry{
+export default class Entry {
   index: number;
-  constructor(){
+  constructor() {
     this.index = -1;
   }
 }

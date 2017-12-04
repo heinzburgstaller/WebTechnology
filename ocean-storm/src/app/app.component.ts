@@ -1,6 +1,12 @@
 import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { NetworkService } from './network.service';
-import { GameField, Ship, GameFieldPosition, State, Placeholder } from './models';
+import {
+  GameField,
+  Ship,
+  GameFieldPosition,
+  State,
+  Placeholder
+} from './models';
 import { GameFieldDrawer } from './GameFieldCanvas';
 
 @Component({
@@ -8,31 +14,33 @@ import { GameFieldDrawer } from './GameFieldCanvas';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
-
 export class AppComponent implements OnInit, OnDestroy {
-
   placeholder: Placeholder = Placeholder.standard;
   state: State = State.setupGameField;
   subscription: any;
   playerGameField: GameField;
   beInLine: boolean;
-  hideGameFields: boolean = false;//TODO: change to true if callback is implemented
+  hideGameFields = false; // TODO: change to true if callback is implemented
   setupGameFieldFinished: Boolean = false;
   playerFieldDrawer: GameFieldDrawer;
   opponenGameFieldDrawer: GameFieldDrawer;
 
-  isOpponentReady: boolean = false;
+  isOpponentReady = false;
 
   constructor(public networkService: NetworkService) {
     console.log('constructor');
   }
 
   ngOnInit() {
-    this.subscription = this.networkService.getMessageEmitter()
+    this.subscription = this.networkService
+      .getMessageEmitter()
       .subscribe(this.parseMessage.bind(this));
     this.playerGameField = new GameField();
-    this.playerFieldDrawer = new GameFieldDrawer('playerCanvas', (test) => { });
-    this.opponenGameFieldDrawer = new GameFieldDrawer('opponentCanvas', this.opponentGameFieldClickCallback.bind(this));
+    this.playerFieldDrawer = new GameFieldDrawer('playerCanvas', test => {});
+    this.opponenGameFieldDrawer = new GameFieldDrawer(
+      'opponentCanvas',
+      this.opponentGameFieldClickCallback.bind(this)
+    );
     this.opponenGameFieldDrawer.setHoveringEnabled(false);
     this.setupInitialGameField();
   }
@@ -54,16 +62,29 @@ export class AppComponent implements OnInit, OnDestroy {
         const pos = message.payload;
         this.handleHitRequest(pos);
         break;
-      case "Hit":
-        this.opponenGameFieldDrawer.drawShipHitAtIndex(message.payload.x, message.payload.y, false,message.payload.index);
+      case 'Hit':
+        this.opponenGameFieldDrawer.drawShipHitAtIndex(
+          message.payload.x,
+          message.payload.y,
+          false,
+          message.payload.index
+        );
         break;
       case 'Miss':
-        this.opponenGameFieldDrawer.drawShipMissAtIndex(message.payload.x, message.payload.y);
+        this.opponenGameFieldDrawer.drawShipMissAtIndex(
+          message.payload.x,
+          message.payload.y
+        );
         break;
-      case "ShipSunk":
+      case 'ShipSunk':
         const payload = JSON.parse(message.payload);
-        for(const pos of JSON.parse(message.payload).ships){
-          this.opponenGameFieldDrawer.drawShipHitAtIndex(pos.x, pos.y, true, payload.index);
+        for (const pos1 of JSON.parse(message.payload).ships) {
+          this.opponenGameFieldDrawer.drawShipHitAtIndex(
+            pos1.x,
+            pos1.y,
+            true,
+            payload.index
+          );
         }
         break;
       case 'GameEnd':
@@ -72,7 +93,10 @@ export class AppComponent implements OnInit, OnDestroy {
         this.disconnect();
         break;
       default:
-        console.log('wrong action structur -> no type defined : ' + JSON.stringify(message));
+        console.log(
+          'wrong action structur -> no type defined : ' +
+            JSON.stringify(message)
+        );
         break;
     }
   }
@@ -84,7 +108,7 @@ export class AppComponent implements OnInit, OnDestroy {
   playWith(player) {
     this.networkService.connectToEnemy(player);
     this.hideGameFields = false;
-    //TODO: put this in a Callback which is fired when the connection is established
+    // TODO: put this in a Callback which is fired when the connection is established
     /*this.sendToOpponent(
       {
         "type": 'Connected',
@@ -110,7 +134,7 @@ export class AppComponent implements OnInit, OnDestroy {
     } else {
       const action = {
         type: 'Ready',
-        payload: '',
+        payload: ''
       };
       this.setupGameFieldFinished = true;
       this.sendToOpponent(action);
@@ -137,7 +161,7 @@ export class AppComponent implements OnInit, OnDestroy {
         type: 'RequestHit',
         payload: {
           x: click.x,
-          y: click.y,
+          y: click.y
         }
       };
       this.sendToOpponent(action);
@@ -167,29 +191,36 @@ export class AppComponent implements OnInit, OnDestroy {
     const index = this.playerGameField.field[pos.x][pos.y].index;
     const action = {
       type: '',
-      payload: undefined,
+      payload: undefined
     };
-    if (index !== -1) {// hit
+    if (index !== -1) {
+      // hit
       const isSunk = this.playerGameField.ships[index].setPosToHitted(pos);
-      if (isSunk) {// ship is sunk
+      if (isSunk) {
+        // ship is sunk
         const gameHasEnded = this.checkGameEnds();
         if (gameHasEnded) {
           console.log('game has ended!!!');
           action.type = 'GameEnd';
           this.placeholder = Placeholder.loose;
-        }
-        else {
-          action.type = "ShipSunk";
-          action.payload = JSON.stringify({ 
+        } else {
+          action.type = 'ShipSunk';
+          action.payload = JSON.stringify({
             ships: this.playerGameField.ships[index].positions,
             index: index
           });
           console.log(index);
-          for(const pos of this.playerGameField.ships[index].positions){
-            this.playerFieldDrawer.drawShipHitAtIndex(pos.x, pos.y, true, index);
+          for (const pos1 of this.playerGameField.ships[index].positions) {
+            this.playerFieldDrawer.drawShipHitAtIndex(
+              pos1.x,
+              pos1.y,
+              true,
+              index
+            );
           }
         }
-      } else {// normal hit
+      } else {
+        // normal hit
         action.type = 'Hit';
         action.payload = {
           x: pos.x,
@@ -198,7 +229,8 @@ export class AppComponent implements OnInit, OnDestroy {
         };
         this.playerFieldDrawer.drawShipHitAtIndex(pos.x, pos.y, false, index);
       }
-    } else {// miss
+    } else {
+      // miss
       action.type = 'Miss';
       action.payload = {
         x: pos.x,
@@ -238,54 +270,46 @@ export class AppComponent implements OnInit, OnDestroy {
       new GameFieldPosition(0, 0),
       new GameFieldPosition(1, 0),
       new GameFieldPosition(2, 0),
-      new GameFieldPosition(3, 0),
+      new GameFieldPosition(3, 0)
     ];
 
     const cruiser = new Ship();
     cruiser.positions = [
       new GameFieldPosition(0, 1),
       new GameFieldPosition(1, 1),
-      new GameFieldPosition(2, 1),
+      new GameFieldPosition(2, 1)
     ];
     const cruiser2 = new Ship();
     cruiser2.positions = [
       new GameFieldPosition(4, 1),
       new GameFieldPosition(5, 1),
-      new GameFieldPosition(6, 1),
+      new GameFieldPosition(6, 1)
     ];
 
     const destroyer = new Ship();
     destroyer.positions = [
       new GameFieldPosition(0, 2),
-      new GameFieldPosition(1, 2),
+      new GameFieldPosition(1, 2)
     ];
     const destroyer2 = new Ship();
     destroyer2.positions = [
       new GameFieldPosition(4, 2),
-      new GameFieldPosition(5, 2),
+      new GameFieldPosition(5, 2)
     ];
     const destroyer3 = new Ship();
     destroyer3.positions = [
       new GameFieldPosition(7, 2),
-      new GameFieldPosition(8, 2),
+      new GameFieldPosition(8, 2)
     ];
 
     const submarine = new Ship();
-    submarine.positions = [
-      new GameFieldPosition(0, 3),
-    ];
+    submarine.positions = [new GameFieldPosition(0, 3)];
     const submarine2 = new Ship();
-    submarine2.positions = [
-      new GameFieldPosition(2, 3),
-    ];
+    submarine2.positions = [new GameFieldPosition(2, 3)];
     const submarine3 = new Ship();
-    submarine3.positions = [
-      new GameFieldPosition(4, 3),
-    ];
+    submarine3.positions = [new GameFieldPosition(4, 3)];
     const submarine4 = new Ship();
-    submarine4.positions = [
-      new GameFieldPosition(6, 3),
-    ];
+    submarine4.positions = [new GameFieldPosition(6, 3)];
 
     this.playerGameField.ships = [
       battleship,
@@ -308,4 +332,3 @@ export class AppComponent implements OnInit, OnDestroy {
     });
   }
 }
-
