@@ -86,6 +86,9 @@ export class AppComponent implements OnInit, OnDestroy {
             payload.index
           );
         }
+        const shipSunkSound = document.getElementsByTagName('audio')[0];
+        shipSunkSound.play();
+
         break;
       case 'GameEnd':
         this.placeholder = Placeholder.win;
@@ -195,6 +198,9 @@ export class AppComponent implements OnInit, OnDestroy {
       const isSunk = this.playerGameField.ships[index].setPosToHitted(pos);
       if (isSunk) {
         // ship is sunk
+        const shipSunkSound = document.getElementsByTagName('audio')[0];
+        shipSunkSound.play();
+
         const gameHasEnded = this.checkGameEnds();
         if (gameHasEnded) {
           action.type = 'GameEnd';
