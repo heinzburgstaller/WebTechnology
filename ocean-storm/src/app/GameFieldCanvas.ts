@@ -6,7 +6,7 @@ let rowsOfField: number = 10;
 
 
 let shipColors: string[] = [
-	"rgba(196, 104, 084, 1)",
+	"rgba(196, 154, 124, 1)",
 	"rgba(142, 196, 084, 1)",
 	"rgba(068, 163, 139, 1)",
 	"rgba(085, 097, 193, 1)",
@@ -218,8 +218,8 @@ export class GameFieldDrawer {
 	public drawShipAtIndex(x, y, shipIndex) {
 		var cell = this.cells[x][y];
 		cell.shipIndex = shipIndex;
-		this.drawShip(cell);
 		cell.fieldState = CanvasFieldState.OccupiedUndamaged;
+		this.drawShip(cell);
 	}
 
 
@@ -261,16 +261,16 @@ export class GameFieldDrawer {
 	drawShipHitAtIndexWithShipIndex(x, y, sunk, shipIndex) {
 		var cell = this.cells[x][y];
 		cell.shipIndex = shipIndex
-		if(!sunk) {
-			cell.fieldState = CanvasFieldState.ShotHit;
-			this.drawShipHit(cell);
-		} else if(cell.fieldState == CanvasFieldState.Empty || cell.fieldState == CanvasFieldState.ShotHit) {
-			cell.fieldState = CanvasFieldState.ShotSunk;
-			this.drawShip(cell);
-		} else {
+		if(cell.fieldState == CanvasFieldState.OccupiedUndamaged || cell.fieldState == CanvasFieldState.OccupiedHit) {
 			cell.fieldState = CanvasFieldState.OccupiedHit;
 			this.drawShip(cell);
 			this.drawShipHit(cell);
+		} else if(!sunk) {
+			cell.fieldState = CanvasFieldState.ShotHit;
+			this.drawShipHit(cell);
+		} else if(sunk && (cell.fieldState == CanvasFieldState.Empty || cell.fieldState == CanvasFieldState.ShotHit)) {
+			cell.fieldState = CanvasFieldState.ShotSunk;
+			this.drawShip(cell);
 		}
 	}
 
