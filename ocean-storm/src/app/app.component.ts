@@ -20,7 +20,7 @@ export class AppComponent implements OnInit, OnDestroy {
   subscription: any;
   playerGameField: GameField;
   beInLine: boolean;
-  hideGameFields = false; // TODO: change to true if callback is implemented
+  hideGameFields = true;
   setupGameFieldFinished: Boolean = false;
   playerFieldDrawer: GameFieldDrawer;
   opponenGameFieldDrawer: GameFieldDrawer;
@@ -92,6 +92,11 @@ export class AppComponent implements OnInit, OnDestroy {
         this.reset();
         this.disconnect();
         break;
+      case 'EndGameManually':
+        this.placeholder = Placeholder.standard;
+        this.reset();
+        this.disconnect();
+        break;
       default:
         console.log(
           'wrong action structur -> no type defined : ' +
@@ -108,14 +113,6 @@ export class AppComponent implements OnInit, OnDestroy {
   playWith(player) {
     this.networkService.connectToEnemy(player);
     this.hideGameFields = false;
-    // TODO: put this in a Callback which is fired when the connection is established
-    /*this.sendToOpponent(
-      {
-        "type": 'Connected',
-        "payload": '',
-      },
-      State.setupGameField
-    );*/
   }
 
   sendToOpponent(action, state = State.waiting) {
@@ -143,7 +140,7 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   reset() {
-    // this.HideGameFields = true -> uncomment if callback is implemented
+    this.hideGameFields = true;
     this.setupGameFieldFinished = false;
     this.isOpponentReady = false;
     this.playerGameField = new GameField();
@@ -200,7 +197,6 @@ export class AppComponent implements OnInit, OnDestroy {
         // ship is sunk
         const gameHasEnded = this.checkGameEnds();
         if (gameHasEnded) {
-          console.log('game has ended!!!');
           action.type = 'GameEnd';
           this.placeholder = Placeholder.loose;
         } else {
@@ -209,7 +205,6 @@ export class AppComponent implements OnInit, OnDestroy {
             ships: this.playerGameField.ships[index].positions,
             index: index
           });
-          console.log(index);
           for (const pos1 of this.playerGameField.ships[index].positions) {
             this.playerFieldDrawer.drawShipHitAtIndex(
               pos1.x,
@@ -250,6 +245,15 @@ export class AppComponent implements OnInit, OnDestroy {
       }
     }
     return allShipsAreSunk;
+  }
+
+  endGameManually() {
+    this.placeholder = Placeholder.standard;
+    this.reset();
+    const action = {
+      type: 'EndGameManually',
+    };
+    this.sendToOpponent(action);
   }
 
   disconnect() {
