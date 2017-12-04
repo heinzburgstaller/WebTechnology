@@ -38,6 +38,7 @@ export class NetworkService {
       this.enemyPeerId = conn.peer;
       this.connectedToSubscription = this.players.subscribe(players => {
         this.connectedTo = players.find(player => player.peerId === this.enemyPeerId);
+        this.messageEmitter.emit({ type: 'Connected', payload: '' });
       });
       this.enemyConnection = conn;
       this.playersRef.update(this.key, { isPlaying: true });
@@ -68,6 +69,7 @@ export class NetworkService {
     this.enemyPeerId = player.peerId;
     this.connectedToSubscription = this.players.subscribe(players => {
       this.connectedTo = players.find(p => p.peerId === this.enemyPeerId);
+      this.messageEmitter.emit({ type: 'Connected', payload: '' });
     });
     this.enemyConnection = this.peer.connect(player.peerId);
     this.enemyConnection.on('data', (data) => {
