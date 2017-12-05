@@ -110,6 +110,10 @@ export class GameFieldDrawer {
 
 	mouseClickCallback: (click) => void;
 
+	dragIndex: {x: number,y: number};
+	dropIndex: {x: number,y: number};
+	dragging: boolean;
+
     //////////////////////////////////////////////////////////////////////////////////////////
 	// Init:
 	//////////////////
@@ -130,8 +134,8 @@ export class GameFieldDrawer {
 
         this.canvas.addEventListener('mousemove', this.handleMouseMove.bind(this), false);
 		this.canvas.addEventListener('mouseout', this.handleMouseOut.bind(this), false);
-
 		this.canvas.addEventListener('mouseup', this.handleMouseClick.bind(this), false);
+		this.canvas.addEventListener('mousedown', this.handleMouseDown.bind(this), false);
 	}
 
 
@@ -412,17 +416,31 @@ export class GameFieldDrawer {
 	handleMouseClick(arg) {
 		const indices = this.getIndicesForMouseEvent(arg);
 		const cell = this.cells[indices.x][indices.y];
-
-		if (indices.positionIsInField && cell.fieldState === CanvasFieldState.Empty) {
+		console.log('MouseClick');
+		/*if (indices.positionIsInField && cell.fieldState === CanvasFieldState.Empty) {
 			this.mouseClickCallback(indices);
-		}
+		}*/
 
+		this.dragging = false;
+
+	}
+
+	handleMouseDown(arg){
+		console.log('Mousedown')
+		this.dragging = true;
+		const indices = this.getIndicesForMouseEvent(arg);
+		this.cells[indices.x][indices.y].fieldState = 1;
+		this.cells[indices.x][indices.y].shipIndex = -1;
+		this.mouseClickCallback(indices);
+
+
+
+		console.log(this.cells);
 	}
 
 	handleMouseMove(arg) {
 
 		const indices = this.getIndicesForMouseEvent(arg);
-
 		if (indices.positionIsInField && this.hoveringEnabled) {
 			const potentialCell = this.cells[indices.x][indices.y];
 
@@ -440,7 +458,7 @@ export class GameFieldDrawer {
 
 	handleMouseOut() {
 		const ctx = this.canvas.getContext('2d');
-
+		console.log('MouseOut');
 		this.resetHoverCell();
 		this.hoverCell = null;
 	}
