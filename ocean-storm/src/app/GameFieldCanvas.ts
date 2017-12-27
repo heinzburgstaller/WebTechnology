@@ -88,7 +88,8 @@ class CanvasGameTile extends CanvasElement {
 
 
 ////////////////////////
-// Main Thingy
+// GameFieldDrawer
+// uses HTML5 feature CANVAS to draw gamefield in browser
 ////////////////////////
 
 export class GameFieldDrawer {
@@ -112,6 +113,7 @@ export class GameFieldDrawer {
 
     //////////////////////////////////////////////////////////////////////////////////////////
 	// Init:
+	// initializes gamefield with id and mouseClickback to get notified if a position is selected
 	//////////////////
 
 	constructor(canvasId, mouseClickCallback) {
@@ -135,6 +137,7 @@ export class GameFieldDrawer {
 	}
 
 
+	// draws the basic grid without any content
 	drawGameGrid() {
 
 		const canvasWidth = this.canvas.width;
@@ -187,7 +190,7 @@ export class GameFieldDrawer {
 			this.ctx.stroke();
 		}
 	}
-
+	// add each cell to the `cell` property of the class
 	initCells() {
 
 		this.cells = [];

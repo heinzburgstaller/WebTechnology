@@ -21,6 +21,11 @@ export class NetworkService {
   enemyPeerId: string = null;
   connectedToSubscription: any;
 
+  //////
+  // init: 
+  // create NetworkService class with a connection to a Firebase live database
+  // connect to the Peer server and set everything up for connection to opponent
+  //////
   constructor(private db: AngularFireDatabase) {
     this.playersRef = db.list('players');
     // Use snapshotChanges().map() to store the key
@@ -64,6 +69,10 @@ export class NetworkService {
 
   }
 
+  //////
+  // connect to the player which is passed by parameter
+  // save connection an implements `data` and `close` event
+  /////
   connectToEnemy(player) {
     this.playersRef.update(this.key, { isPlaying: true });
     this.enemyPeerId = player.peerId;
@@ -82,30 +91,51 @@ export class NetworkService {
     });
   }
 
+  ////
+  // sends message to the active enemy connection 
+  ////
   sendMessage(message: any) {
     this.enemyConnection.send(message);
   }
 
+  ////
+  // add player to firebase database with name, id and isPlaying
+  ///
   addPlayer(name: string, peerId: any, isPlaying: boolean) {
     return this.playersRef.push({ name: name, peerId: peerId, isPlaying: isPlaying }).key;
   }
 
+  /////
+  // update the isPlaying state of a player on the live database
+  ////
   updatePlayer(key: string, name: string, isPlaying: boolean) {
     this.playersRef.update(key, { name: name, isPlaying: isPlaying });
   }
 
+  /////
+  // delete player on firebase live database
+  ////
   deletePlayer(key) {
     this.playersRef.remove(key);
   }
 
+  /////
+  // change name of player on the live database
+  ////
   changePlayerName(newName: string) {
     this.updatePlayer(this.key, newName, false);
   }
 
+  /////
+  // terminate the direct connection to the opponent
+  ////
   closeConnectionToEnemy() {
     this.enemyConnection.close();
   }
 
+  /////
+  // reset to initial state
+  ////
   private cleanUpConnection() {
     this.connectedToSubscription.unsubscribe();
     this.enemyPeerId = null;
@@ -114,6 +144,9 @@ export class NetworkService {
     this.playersRef.update(this.key, { isPlaying: false });
   }
 
+  /////
+  // remove player from firebase database
+  ////
   unregister() {
     this.deletePlayer(this.key);
   }
