@@ -1,9 +1,7 @@
 import { ASTWithSource } from '@angular/compiler';
 
-// TODO: Define this somewhere else
 const columnsOfField = 10;
 const rowsOfField = 10;
-
 
 const shipColors: string[] = [
 	'rgba(196, 154, 124, 1)',
@@ -28,7 +26,7 @@ enum CanvasFieldState {
 }
 
 ////////////////////////
-// Supporting classes
+// Helper classes
 ////////////////////////
 
 class CanvasElementPosition {
@@ -216,8 +214,9 @@ export class GameFieldDrawer {
 	//////////////////
 
 	//////////////////
-	// Updating the fields
+	// Drawing
 
+	// Draws the ship on cell at an x/y position. The shipIndex indicates which color the cell will have
 	public drawShipAtIndex(x, y, shipIndex) {
 		const cell = this.cells[x][y];
 		cell.shipIndex = shipIndex;
@@ -225,7 +224,7 @@ export class GameFieldDrawer {
 		this.drawShip(cell);
 	}
 
-
+	// Draws the ship on a cell
 	private drawShip(cell) {
 
 		this.clearCanvasElement(cell);
@@ -241,6 +240,7 @@ export class GameFieldDrawer {
             cell.frame.size.height);
 	}
 
+	// Clears a cell
 	clearCelldAtIndex(x, y) {
 		const cell = this.cells[x][y];
 
@@ -248,6 +248,7 @@ export class GameFieldDrawer {
 		cell.fieldState = CanvasFieldState.Empty;
 	}
 
+	// Clears a canvas element
 	clearCanvasElement(element) {
 		this.ctx.clearRect(
 			element.frame.origin.x,
@@ -256,7 +257,7 @@ export class GameFieldDrawer {
 			element.frame.size.height);
 	}
 
-
+	// Draws an X on the cell (given by coordinates) to indicate a ship hit. If the all elements of a ship are hit (aka sunk), draw the ship itself underneath the X
 	drawShipHitAtIndex(x, y, sunk, shipIndex) {
 		const cell = this.cells[x][y];
 		cell.shipIndex = shipIndex;
@@ -273,7 +274,7 @@ export class GameFieldDrawer {
 		}
 	}
 
-
+	// Draws an X on the cell to indicate a ship hit
 	drawShipHit(cell) {
 
 		if (cell.fieldState === CanvasFieldState.ShotHit) {
@@ -296,6 +297,7 @@ export class GameFieldDrawer {
 		this.ctx.stroke();
 	}
 
+	// Draws an circle on the cell (given by coordinates) to indicate a ship miss
 	drawShipMissAtIndex(x, y) {
 		const cell = this.cells[x][y];
 		cell.fieldState = CanvasFieldState.ShotMiss;
@@ -303,6 +305,7 @@ export class GameFieldDrawer {
 		this.drawShipMiss(cell);
 	}
 
+	// Draws an circle on the cell to indicate a ship miss
 	drawShipMiss(cell) {
 		this.ctx.strokeStyle = '#0000FF';
         this.ctx.lineWidth = 2;
@@ -317,6 +320,7 @@ export class GameFieldDrawer {
         this.ctx.stroke();
 	}
 
+	// Clears a field and sets it state to empty
 	public clearField() {
 		for (let x = 0; x < columnsOfField; x++) {
 			for (let y = 0; y < rowsOfField; y++) {
@@ -331,14 +335,16 @@ export class GameFieldDrawer {
 		}
 	}
 
+	////////////////////////
 	// Hovering
 
+	// Enable/Disable hovering depening on the field and which player is playing
 	setHoveringEnabled(hovering: Boolean) {
 		this.hoveringEnabled = hovering;
 	}
 
+	// Displays the hovering of the given cell by overlaying it with a grey rectangle
 	addHoveringToCell(cell) {
-
 		this.ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
         this.ctx.fillRect(
 			cell.frame.origin.x,
@@ -347,8 +353,8 @@ export class GameFieldDrawer {
             cell.frame.size.height);
 	}
 
+	// Clears the hovered cell and redraws its content without the hovering indicator
 	resetHoverCell() {
-
 			const ctx = this.canvas.getContext('2d');
 
 			if (this.hoverCell != null) {
@@ -377,41 +383,46 @@ export class GameFieldDrawer {
 			}
 		}
 
-		showTurnIndicator() {
+	////////////////////////
+	// Hovering indicator
 
-			this.ctx.strokeStyle = '#FF0000';
-			this.ctx.lineWidth = 2;
+	// Add a red circle to the top left corner of the game field to indicate which player is currently playing
+	showTurnIndicator() {
+		this.ctx.strokeStyle = '#FF0000';
+		this.ctx.lineWidth = 2;
 
-			this.ctx.beginPath();
-			this.ctx.arc(
-				this.cellSize.width / 2,
-				this.cellSize.height / 2,
-				this.cellSize.width / 4,
-				0,
-				2 * Math.PI);
-			this.ctx.stroke();
+		this.ctx.beginPath();
+		this.ctx.arc(
+			this.cellSize.width / 2,
+			this.cellSize.height / 2,
+			this.cellSize.width / 4,
+			0,
+			2 * Math.PI);
+		this.ctx.stroke();
 
-			this.turnIndicatorFrame = new CanvasElementFrame(
-				this.cellSize.width / 4 - this.ctx.lineWidth,
-				this.cellSize.width / 4 - this.ctx.lineWidth,
-				this.cellSize.width / 2 + this.ctx.lineWidth * 2,
-				this.cellSize.width / 2 + this.ctx.lineWidth * 2);
+		this.turnIndicatorFrame = new CanvasElementFrame(
+			this.cellSize.width / 4 - this.ctx.lineWidth,
+			this.cellSize.width / 4 - this.ctx.lineWidth,
+			this.cellSize.width / 2 + this.ctx.lineWidth * 2,
+			this.cellSize.width / 2 + this.ctx.lineWidth * 2);
+	}
+
+	// Clear the turn indicator
+	hideTurnIndicator() {
+		if (this.turnIndicatorFrame != null) {
+			this.ctx.clearRect(
+				this.turnIndicatorFrame.origin.x,
+				this.turnIndicatorFrame.origin.y,
+				this.turnIndicatorFrame.size.width,
+				this.turnIndicatorFrame.size.height);
 		}
-
-		hideTurnIndicator() {
-			if (this.turnIndicatorFrame != null) {
-				this.ctx.clearRect(
-					this.turnIndicatorFrame.origin.x,
-					this.turnIndicatorFrame.origin.y,
-					this.turnIndicatorFrame.size.width,
-					this.turnIndicatorFrame.size.height);
-			}
-		}
+	}
 
 
 	////////////////////////
-	// Mouse Events, that should probably handled somewhere else
+	// Mouse Events
 
+	// Notify 
 	handleMouseClick(arg) {
 		const indices = this.getIndicesForMouseEvent(arg);
 		const cell = this.cells[indices.x][indices.y];
@@ -422,8 +433,8 @@ export class GameFieldDrawer {
 
 	}
 
+	// Highlight the cell that is currently occupied by the mouse
 	handleMouseMove(arg) {
-
 		const indices = this.getIndicesForMouseEvent(arg);
 
 		if (indices.positionIsInField && this.hoveringEnabled) {
@@ -441,13 +452,14 @@ export class GameFieldDrawer {
 		}
 	}
 
+	// Reset the hovered cell if the mouse left the canvas
 	handleMouseOut() {
 		const ctx = this.canvas.getContext('2d');
-
 		this.resetHoverCell();
 		this.hoverCell = null;
 	}
 
+	// Get index of cell that is occupied by the mouse
 	getIndicesForMouseEvent(arg) {
 
 		const rect = this.canvas.getBoundingClientRect();
