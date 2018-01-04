@@ -116,6 +116,7 @@ export class GameFieldDrawer {
 	dragging: boolean;
 	dragHorizontal: boolean;
 	drageCells: CanvasGameTile[];
+	public setUpFinished: boolean;
 
     //////////////////////////////////////////////////////////////////////////////////////////
 	// Init:
@@ -198,7 +199,7 @@ export class GameFieldDrawer {
 	}
 	// add each cell to the `cell` property of the class
 	initCells() {
-
+		this.setUpFinished = false;
 		this.cells = [];
 		this.drageCells = [];
 
@@ -496,6 +497,16 @@ export class GameFieldDrawer {
 
 	// Notify
 	handleMouseClick(arg) {
+
+		if(this.setUpFinished){
+			const indices = this.getIndicesForMouseEvent(arg);
+			const cell = this.cells[indices.x][indices.y];
+
+			if (indices.positionIsInField && cell.fieldState === CanvasFieldState.Empty) {
+				this.mouseClickCallback(indices);
+			}
+		}
+		else{
 		var left, right;
 		left = 0;
 		right = 2;
@@ -522,6 +533,7 @@ export class GameFieldDrawer {
       this.spinShip(cell, this.getShipSize(cell, indices));
     }
 	}
+}
 
 	 spinShip(cell, size){
 		var spinAble = true;
@@ -607,7 +619,9 @@ export class GameFieldDrawer {
 	}
 
 	handleMouseDown(arg){
-
+		if(this.setUpFinished){
+			return;
+		}
 		var left, right;
 		left = 0;
 		right = 2;
@@ -644,7 +658,9 @@ export class GameFieldDrawer {
 	}
 
 	handleMouseMove(arg) {
-
+		if(this.setUpFinished){
+			return;
+		}
 		var indices = this.getIndicesForMouseEvent(arg);
 
 

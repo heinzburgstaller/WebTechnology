@@ -141,11 +141,12 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   /////
-  // prepare start game for this player 
+  // prepare start game for this player
   // notify enemy that this player is ready
   ////
   finishedSetup() {
     this.playerFieldDrawer.setHoveringEnabled(false);
+    this.playerFieldDrawer.setUpFinished = true;
     if (this.isOpponentReady) {
       this.changeStateTo(State.beInLine);
       this.setupGameFieldFinished = true;
@@ -161,7 +162,7 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   /////
-  // reset to initial state 
+  // reset to initial state
   ////
   reset() {
     this.hideGameFields = true;
