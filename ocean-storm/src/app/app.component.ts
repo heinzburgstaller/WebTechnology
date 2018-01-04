@@ -49,6 +49,10 @@ export class AppComponent implements OnInit, OnDestroy {
     this.subscription.unsubscribe();
   }
 
+  /////
+  // parse message from peer connection
+  // basic game logic is included
+  ////
   parseMessage(message) {
     switch (message.type) {
       case 'Connected':
@@ -109,15 +113,25 @@ export class AppComponent implements OnInit, OnDestroy {
     }
   }
 
+  /////
+  // handle name change in networkService class
+  ////
   playerNameChange(event) {
     this.networkService.changePlayerName(event.target.value);
   }
 
+  /////
+  // set up connection to chosen player in view
+  ////
   playWith(player) {
     this.networkService.connectToEnemy(player);
     this.hideGameFields = false;
   }
 
+  /////
+  // wrapper for sending message to opponent for state handling
+  // send action/message to enemy
+  ////
   sendToOpponent(action, state = State.waiting) {
     this.changeStateTo(state);
     this.networkService.sendMessage(action);
@@ -126,6 +140,10 @@ export class AppComponent implements OnInit, OnDestroy {
     }
   }
 
+  /////
+  // prepare start game for this player 
+  // notify enemy that this player is ready
+  ////
   finishedSetup() {
     this.playerFieldDrawer.setHoveringEnabled(false);
     if (this.isOpponentReady) {
@@ -142,6 +160,9 @@ export class AppComponent implements OnInit, OnDestroy {
     }
   }
 
+  /////
+  // reset to initial state 
+  ////
   reset() {
     this.hideGameFields = true;
     this.setupGameFieldFinished = false;
@@ -155,6 +176,10 @@ export class AppComponent implements OnInit, OnDestroy {
     this.setupInitialGameField();
   }
 
+  /////
+  // callback for clicks on gamefield
+  // create and send action to enemy
+  ////
   opponentGameFieldClickCallback(click) {
     if (this.state === State.beInLine) {
       const action = {
@@ -168,6 +193,9 @@ export class AppComponent implements OnInit, OnDestroy {
     }
   }
 
+  /////
+  // change class state to `state`
+  ////
   changeStateTo(state: State) {
     switch (state) {
       case State.beInLine:
@@ -187,6 +215,10 @@ export class AppComponent implements OnInit, OnDestroy {
     }
   }
 
+  /////
+  // check enemy hit or miss
+  // notify enemy with `hit`, `miss`, `shipSunk` and `gameEnd`
+  ////
   handleHitRequest(pos) {
     const index = this.playerGameField.field[pos.x][pos.y].index;
     const action = {
@@ -242,6 +274,9 @@ export class AppComponent implements OnInit, OnDestroy {
     this.sendToOpponent(action, State.beInLine);
   }
 
+  /////
+  // checks if all ships are sunk
+  ////
   checkGameEnds() {
     let allShipsAreSunk = true;
     for (const ship of this.playerGameField.ships) {
@@ -253,6 +288,9 @@ export class AppComponent implements OnInit, OnDestroy {
     return allShipsAreSunk;
   }
 
+  /////
+  // close connection and notify enemy
+  ////
   endGameManually() {
     this.placeholder = Placeholder.standard;
     this.reset();
@@ -262,6 +300,9 @@ export class AppComponent implements OnInit, OnDestroy {
     this.sendToOpponent(action);
   }
 
+  /////
+  // close peerConnection to enemy
+  ////
   disconnect() {
     this.networkService.closeConnectionToEnemy();
   }
@@ -272,6 +313,9 @@ export class AppComponent implements OnInit, OnDestroy {
     return 'nothing';
   }
 
+  /////
+  // add all ships to gamefield and set state to `setupGameField`
+  ////
   setupInitialGameField() {
     this.state = State.setupGameField;
 
