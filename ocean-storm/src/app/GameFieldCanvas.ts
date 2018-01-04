@@ -112,7 +112,11 @@ export class GameFieldDrawer {
 
 	dragIndex: {x: number,y: number};
 	dropIndex: {x: number,y: number};
+	dragShipIndex: number;
+	dragShipSize: number;
 	dragging: boolean;
+	dragHorizontal: boolean;
+	drageCells: CanvasGameTile[];
 
     //////////////////////////////////////////////////////////////////////////////////////////
 	// Init:
@@ -132,7 +136,7 @@ export class GameFieldDrawer {
 
 		this.hoveringEnabled = true;
 
-        this.canvas.addEventListener('mousemove', this.handleMouseMove.bind(this), false);
+    this.canvas.addEventListener('mousemove', this.handleMouseMove.bind(this), false);
 		this.canvas.addEventListener('mouseout', this.handleMouseOut.bind(this), false);
 		this.canvas.addEventListener('mouseup', this.handleMouseClick.bind(this), false);
 		this.canvas.addEventListener('mousedown', this.handleMouseDown.bind(this), false);
@@ -195,6 +199,7 @@ export class GameFieldDrawer {
 	initCells() {
 
 		this.cells = [];
+		this.drageCells = [];
 
 		for (let x = 0; x < columnsOfField; x++) {
 
@@ -332,6 +337,53 @@ export class GameFieldDrawer {
 		}
 	}
 
+
+
+	getShipSize(cell, indices) {
+		let x = indices.x;
+		let y = indices.y;
+
+		if(cell.fieldState != 5){
+			return 0;
+		}
+		let shipSize = 1;
+
+		//up
+		try{
+			for(let y_ = y-1; this.cells[x][y_].shipIndex == cell.shipIndex; y_--) {
+				shipSize++;
+			}
+		}
+		catch (e){
+		}
+		//down
+		try{
+			for(let y_ = y+1; this.cells[x][y_].shipIndex == cell.shipIndex; y_++) {
+				shipSize++;
+			}
+		}
+		catch (e){
+		}
+		//left
+		try{
+			for(let x_ = x-1; this.cells[x_][y].shipIndex == cell.shipIndex; x_--) {
+				shipSize++;
+			}
+		}
+		catch (e){
+		}
+		//right
+		try{
+			for(let x_ = x+1; this.cells[x_][y].shipIndex == cell.shipIndex; x_++) {
+				shipSize++;
+			}
+		}
+		catch (e){
+		}
+
+		return shipSize;
+	}
+
 	// Hovering
 
 	setHoveringEnabled(hovering: Boolean) {
@@ -348,31 +400,48 @@ export class GameFieldDrawer {
             cell.frame.size.height);
 	}
 
-	resetHoverCell() {
+	addDragHoveringToCell(cell) {
+
+		this.ctx.fillStyle = shipColors[this.dragShipIndex];
+        this.ctx.fillRect(
+			cell.frame.origin.x,
+            cell.frame.origin.y,
+            cell.frame.size.width,
+            cell.frame.size.height);
+	}
+
+	resetDragCells(cells){
+		for (let entry of cells) {
+    	this.resetHoverCell(entry); // 1, "string", false
+		}
+		this.drageCells = [];
+	}
+
+	resetHoverCell(hoverCell) {
 
 			const ctx = this.canvas.getContext('2d');
 
-			if (this.hoverCell != null) {
-				this.clearCanvasElement(this.hoverCell);
+			if (hoverCell != null) {
+				this.clearCanvasElement(hoverCell);
 
-				switch (this.hoverCell.fieldState) {
+				switch (hoverCell.fieldState) {
 					case CanvasFieldState.Empty:
 						break;
 					case CanvasFieldState.ShotMiss:
-						this.drawShipMiss(this.hoverCell);
+						this.drawShipMiss(hoverCell);
 						break;
 					case CanvasFieldState.ShotHit:
-						this.drawShipHit(this.hoverCell);
+						this.drawShipHit(hoverCell);
 						break;
 					case CanvasFieldState.ShotSunk:
-						this.drawShip(this.hoverCell);
+						this.drawShip(hoverCell);
 						break;
 					case CanvasFieldState.OccupiedUndamaged:
-						this.drawShip(this.hoverCell);
+						this.drawShip(hoverCell);
 						break;
 					case CanvasFieldState.OccupiedHit:
-						this.drawShip(this.hoverCell);
-						this.drawShipHit(this.hoverCell);
+						this.drawShip(hoverCell);
+						this.drawShipHit(hoverCell);
 						break;
 				}
 			}
@@ -414,53 +483,176 @@ export class GameFieldDrawer {
 	// Mouse Events, that should probably handled somewhere else
 
 	handleMouseClick(arg) {
-		const indices = this.getIndicesForMouseEvent(arg);
-		const cell = this.cells[indices.x][indices.y];
-		console.log('MouseClick');
-		/*if (indices.positionIsInField && cell.fieldState === CanvasFieldState.Empty) {
-			this.mouseClickCallback(indices);
-		}*/
+		var left, right;
+		left = 0;
+		right = 2;
+		if(arg.button === left){
+			if(this.dragging){
+				const indices = this.getIndicesForMouseEvent(arg);
+				const cell = this.cells[indices.x][indices.y];
 
-		this.dragging = false;
+				for(var i=0; i<this.dragShipSize; i++){
+					if(this.dragHorizontal){
+						this.drawShipAtIndex(indices.x+i, indices.y, this.dragShipIndex)
+					}else{
+						this.drawShipAtIndex(indices.x, indices.y+i, this.dragShipIndex)
+					}
+				}
+				this.dragging = false;
+			}
+    }
+    else if(arg.button === right){
+			var indices = this.getIndicesForMouseEvent(arg);
+			var cell = this.cells[indices.x][indices.y];
 
+			console.log(this.getShipSize(cell, indices))
+      this.spinShip(cell, this.getShipSize(cell, indices));
+    }
+	}
+
+	 spinShip(cell, size){
+		var spinAble = true;
+		//Check if Space free
+
+		if(this.dragHorizontal){
+		for(var i = 0; i < this.cells.length; i++) {
+			var line = this.cells[i];
+			for(var j = 0; j < line.length; j++) {
+				if(cell == this.cells[i][j]){
+					console.log(size)
+					for(var length = 1; length < size; length++){
+						console.log(this.cells[i][j+length].fieldState)
+						if(this.cells[i][j+length].fieldState != CanvasFieldState.Empty){
+							spinAble = false;
+						}
+					}
+					if(spinAble){
+						var shipInd = cell.shipIndex;
+						var state = cell.fieldState;
+						this.removeShipFromCanvas(cell.shipIndex);
+						for(var length = 0; length < size; length++){
+							//this.removeShipFromCanvas(cell.shipIndex);
+							console.log("KOMMT HER")
+							this.cells[i][j+length].fieldState = state;
+							this.cells[i][j+length].shipIndex = shipInd;
+							this.drawShip(this.cells[i][j+length]);
+
+						}
+					}
+				}
+			}
+		}
+	}
+	else{
+		for(var i = 0; i < this.cells.length; i++) {
+			var line = this.cells[i];
+			for(var j = 0; j < line.length; j++) {
+				if(cell == this.cells[i][j]){
+					console.log(size)
+					for(var length = 1; length < size; length++){
+						console.log(this.cells[i+length][j].fieldState)
+						if(this.cells[i+length][j].fieldState != CanvasFieldState.Empty){
+							spinAble = false;
+						}
+					}
+					if(spinAble){
+						var shipInd = cell.shipIndex;
+						var state = cell.fieldState;
+						this.removeShipFromCanvas(cell.shipIndex);
+						for(var length = 0; length < size; length++){
+							//this.removeShipFromCanvas(cell.shipIndex);
+							console.log("KOMMT HER")
+							this.cells[i+length][j].fieldState = state;
+							this.cells[i+length][j].shipIndex = shipInd;
+							this.drawShip(this.cells[i+length][j]);
+
+						}
+					}
+				}
+			}
+		}
+	}
+
+
+
+		console.log(spinAble);
+	}
+
+
+
+	removeShipFromCanvas(index){
+		for(var i = 0; i < this.cells.length; i++) {
+    	var line = this.cells[i];
+    	for(var j = 0; j < line.length; j++) {
+				if(index == this.cells[i][j].shipIndex){
+					this.cells[i][j].fieldState = CanvasFieldState.Empty;
+					this.cells[i][j].shipIndex = -1;
+					this.clearCanvasElement(this.cells[i][j]);
+				}
+    	}
+		}
 	}
 
 	handleMouseDown(arg){
-		console.log('Mousedown')
-		this.dragging = true;
-		const indices = this.getIndicesForMouseEvent(arg);
-		this.cells[indices.x][indices.y].fieldState = 1;
-		this.cells[indices.x][indices.y].shipIndex = -1;
-		this.mouseClickCallback(indices);
 
+		var left, right;
+		left = 0;
+		right = 2;
+		if(arg.button === left){
+			var indices = this.getIndicesForMouseEvent(arg);
+			var cell = this.cells[indices.x][indices.y];
+			this.dragShipIndex = cell.shipIndex;
+			this.dragging = true;
+			this.dragShipSize = this.getShipSize(cell, indices);
+			this.dragHorizontal = this.getShipOrientation(cell, indices); //TODO: find out horizontal/vertical
+			this.removeShipFromCanvas(this.dragShipIndex);
+		}
+		else{
+			var indices = this.getIndicesForMouseEvent(arg);
+			var cell = this.cells[indices.x][indices.y];
+			this.dragShipIndex = cell.shipIndex;
+			this.dragShipSize = this.getShipSize(cell, indices);
+			this.dragHorizontal = this.getShipOrientation(cell, indices);
+		}
+	}
 
-
-		console.log(this.cells);
+	//true wenn horizontal
+	getShipOrientation(cell, indices){
+		let x = indices.x;
+		let y = indices.y;
+		try{
+			if(this.cells[x+1][y].shipIndex == cell.shipIndex || this.cells[x-1][y].shipIndex == cell.shipIndex){
+				return true;
+			}
+		}
+		catch (e){
+		}
+		return false;
 	}
 
 	handleMouseMove(arg) {
 
-		const indices = this.getIndicesForMouseEvent(arg);
-		if (indices.positionIsInField && this.hoveringEnabled) {
-			const potentialCell = this.cells[indices.x][indices.y];
+		var indices = this.getIndicesForMouseEvent(arg);
 
-			if (this.hoverCell !== potentialCell) {
-				this.resetHoverCell();
-				this.hoverCell = potentialCell;
-				this.addHoveringToCell(this.hoverCell);
-			}
 
-		} else {
-			this.resetHoverCell();
-			this.hoverCell = null;
-		}
+				if(this.dragging){
+					this.resetDragCells(this.drageCells);
+					for(var i=0; i<this.dragShipSize; i++){
+						if(this.dragHorizontal){
+							var cellToHover = this.cells[indices.x+i][indices.y];
+							this.drageCells.push(cellToHover);
+							this.addDragHoveringToCell(cellToHover);
+						}else{
+							var cellToHover = this.cells[indices.x][indices.y+i];
+							this.drageCells.push(cellToHover);
+							this.addDragHoveringToCell(cellToHover);
+						}
+					}
+				}
+
 	}
 
 	handleMouseOut() {
-		const ctx = this.canvas.getContext('2d');
-		console.log('MouseOut');
-		this.resetHoverCell();
-		this.hoverCell = null;
 	}
 
 	getIndicesForMouseEvent(arg) {
