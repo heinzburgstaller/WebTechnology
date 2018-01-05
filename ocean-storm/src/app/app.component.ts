@@ -63,6 +63,7 @@ export class AppComponent implements OnInit, OnDestroy {
   parseMessage(message) {
     switch (message.type) {
       case 'Connected':
+        console.log('connected to other player');
         this.hideGameFields = false;
         this.state = State.setupGameField;
         break;
@@ -176,6 +177,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.hideGameFields = true;
     this.setupGameFieldFinished = false;
     this.isOpponentReady = false;
+    this.state = State.setupGameField;
     this.playerGameField = new GameField();
     this.playerFieldDrawer.clearField();
     this.opponenGameFieldDrawer.clearField();
@@ -208,7 +210,7 @@ export class AppComponent implements OnInit, OnDestroy {
   ////
   getShipIndex(position: GameFieldPosition) {
     this.playerGameField.ships.forEach((ship, index) => {
-      ship.positions.forEach((pos) => {
+      ship.positions.forEach(pos => {
         if (pos.x === position.x && pos.y === position.y) {
           return index;
         }
@@ -222,14 +224,14 @@ export class AppComponent implements OnInit, OnDestroy {
   // check if pos is valid and if yes, gameField gets updated
   ////
   isNewPosValid(index, positions: [GameFieldPosition]) {
-    positions.forEach((pos) => {
+    positions.forEach(pos => {
       if (this.playerGameField.field[pos.x][pos.y].index !== -1) {
         return false;
       }
     });
 
     // update playergamefield and ships
-    positions.forEach((pos) => {
+    positions.forEach(pos => {
       this.playerGameField.field[pos.x][pos.y].index = index;
     });
     this.playerGameField.ships[index].positions = positions;
@@ -339,7 +341,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.placeholder = Placeholder.standard;
     this.reset();
     const action = {
-      type: 'EndGameManually',
+      type: 'EndGameManually'
     };
     this.sendToOpponent(action);
   }

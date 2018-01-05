@@ -9,7 +9,6 @@ import 'rxjs/add/operator/map';
 
 @Injectable()
 export class NetworkService {
-
   public peer;
   public peerId;
   public key;
@@ -22,7 +21,7 @@ export class NetworkService {
   connectedToSubscription: any;
 
   //////
-  // init: 
+  // init:
   // create NetworkService class with a connection to a Firebase live database
   // connect to the Peer server and set everything up for connection to opponent
   //////
@@ -30,25 +29,31 @@ export class NetworkService {
     this.playersRef = db.list('players');
     // Use snapshotChanges().map() to store the key
     this.players = this.playersRef.snapshotChanges().map(changes => {
-      return changes.map(c => ({ key: c.payload.key, conn: null, ...c.payload.val() }));
+      return changes.map(c => ({
+        key: c.payload.key,
+        conn: null,
+        ...c.payload.val()
+      }));
     });
 
     this.peer = new Peer(environment.peerJS);
-    this.peer.on('open', (id) => {
+    this.peer.on('open', id => {
       this.peerId = id;
       this.key = this.addPlayer('Player', id, false);
     });
 
-    this.peer.on('connection', (conn) => {
+    this.peer.on('connection', conn => {
       this.enemyPeerId = conn.peer;
       this.connectedToSubscription = this.players.subscribe(players => {
-        this.connectedTo = players.find(player => player.peerId === this.enemyPeerId);
+        this.connectedTo = players.find(
+          player => player.peerId === this.enemyPeerId
+        );
         this.messageEmitter.emit({ type: 'Connected', payload: '' });
       });
       this.enemyConnection = conn;
       this.playersRef.update(this.key, { isPlaying: true });
 
-      conn.on('data', (data) => {
+      conn.on('data', data => {
         this.messageEmitter.emit(data);
       });
 
@@ -58,7 +63,7 @@ export class NetworkService {
       });
     });
 
-    this.peer.on('error', (error) => {
+    this.peer.on('error', error => {
       console.log(error);
       if (error.type === 'peer-unavailable') {
         const n = error.message.split(' ');
@@ -66,7 +71,6 @@ export class NetworkService {
         // this.deleteItem(unPeerId);
       }
     });
-
   }
 
   //////
@@ -81,7 +85,7 @@ export class NetworkService {
       this.messageEmitter.emit({ type: 'Connected', payload: '' });
     });
     this.enemyConnection = this.peer.connect(player.peerId);
-    this.enemyConnection.on('data', (data) => {
+    this.enemyConnection.on('data', data => {
       this.messageEmitter.emit(data);
     });
 
@@ -92,7 +96,7 @@ export class NetworkService {
   }
 
   ////
-  // sends message to the active enemy connection 
+  // sends message to the active enemy connection
   ////
   sendMessage(message: any) {
     this.enemyConnection.send(message);
@@ -102,7 +106,11 @@ export class NetworkService {
   // add player to firebase database with name, id and isPlaying
   ///
   addPlayer(name: string, peerId: any, isPlaying: boolean) {
-    return this.playersRef.push({ name: name, peerId: peerId, isPlaying: isPlaying }).key;
+    return this.playersRef.push({
+      name: name,
+      peerId: peerId,
+      isPlaying: isPlaying
+    }).key;
   }
 
   /////
@@ -154,5 +162,4 @@ export class NetworkService {
   getMessageEmitter(): EventEmitter<any> {
     return this.messageEmitter;
   }
-
 }
