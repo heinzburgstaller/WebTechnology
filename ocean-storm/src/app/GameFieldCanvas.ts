@@ -101,7 +101,7 @@ export class GameFieldDrawer {
   hoveringEnabled: Boolean;
 
   mouseClickCallback: (click) => void;
-  isNewPosValidCallback: (index, positions: [GameFieldPosition]) => boolean;
+  isNewPosValidCallback: (index, positions: GameFieldPosition[]) => boolean;
   getShipIndexCallback: (position: GameFieldPosition) => number;
 
   dragIndex: { x: number; y: number };
@@ -125,7 +125,7 @@ export class GameFieldDrawer {
     getShipIndexCallback
   ) {
     this.mouseClickCallback = mouseClickCallback;
-
+		this.isNewPosValidCallback = isNewPosValidCallback;
     this.canvas = <HTMLCanvasElement>document.getElementById(canvasId);
     this.ctx = this.canvas.getContext('2d');
 
@@ -545,6 +545,7 @@ export class GameFieldDrawer {
         this.mouseClickCallback(indices);
       }
     } else {
+			let positions: GameFieldPosition[] = [];
       let left, right;
       left = 0;
       right = 2;
@@ -560,12 +561,14 @@ export class GameFieldDrawer {
                 indices.y,
                 this.dragShipIndex
               );
+							positions.push(new GameFieldPosition(indices.x+i, indices.y));
             } else {
               this.drawShipAtIndex(
                 indices.x,
                 indices.y + i,
                 this.dragShipIndex
               );
+							positions.push(new GameFieldPosition(indices.x, indices.y+i));
             }
           }
           this.dragging = false;
@@ -577,6 +580,9 @@ export class GameFieldDrawer {
         console.log(this.getShipSize(cell, indices));
         this.spinShip(cell, this.getShipSize(cell, indices));
       }
+			debugger;
+			console.log(this.isNewPosValidCallback(this.dragShipIndex, positions));
+			//positions = [];
     }
   }
 

@@ -38,7 +38,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.playerGameField = new GameField();
     this.playerFieldDrawer = new GameFieldDrawer(
       'playerCanvas',
-      test => {},
+      null,
       this.isNewPosValid.bind(this),
       this.getShipIndex.bind(this)
     );
@@ -187,6 +187,20 @@ export class AppComponent implements OnInit, OnDestroy {
     this.setupInitialGameField();
   }
 
+/*  playerGameFieldClickCallback(cells){
+    this.playerGameField.ships = [];
+    for (let i = 0; i < this.playerGameField.field.length; i++) {
+      const line = cells[i];
+      for (let j = 0; j < this.playerGameField.field.length; j++) {
+        this.playerGameField.field[i][j].index = cells[i][j].shipIndex;
+        if(cells[i][j].shipIndex != -1){
+          //this.playerGameField.ships[cells[i][j].shipIndex-1].positions.push(new GameFieldPosition(i,j));
+          console.log(this.playerGameField.ships);
+        }
+      }
+    }
+  }*/
+
   /////
   // callback for clicks on gamefield
   // create and send action to enemy
@@ -223,20 +237,24 @@ export class AppComponent implements OnInit, OnDestroy {
   // callback for change ship position
   // check if pos is valid and if yes, gameField gets updated
   ////
-  isNewPosValid(index, positions: [GameFieldPosition]) {
+  isNewPosValid(index, positions: GameFieldPosition[]) {
+
+    var ok = true;
     positions.forEach(pos => {
-      if (this.playerGameField.field[pos.x][pos.y].index !== -1) {
-        return false;
+      console.log(this.playerGameField.field[pos.x][pos.y].index);
+      if (this.playerGameField.field[pos.x][pos.y].index > -1) {
+        console.log("KOMMT HEEER")
+        ok = false;
       }
     });
-
+    if(!ok) return false;
     // update playergamefield and ships
     positions.forEach(pos => {
       this.playerGameField.field[pos.x][pos.y].index = index;
     });
     this.playerGameField.ships[index].positions = positions;
 
-    return true;
+    return ok;
   }
 
   /////
@@ -274,6 +292,7 @@ export class AppComponent implements OnInit, OnDestroy {
     if (index !== -1) {
       // hit
       const isSunk = this.playerGameField.ships[index].setPosToHitted(pos);
+      debugger;
       if (isSunk) {
         // ship is sunk
         const shipSunkSound = document.getElementsByTagName('audio')[0];
