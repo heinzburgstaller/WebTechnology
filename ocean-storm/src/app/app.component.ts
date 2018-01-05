@@ -36,10 +36,17 @@ export class AppComponent implements OnInit, OnDestroy {
       .getMessageEmitter()
       .subscribe(this.parseMessage.bind(this));
     this.playerGameField = new GameField();
-    this.playerFieldDrawer = new GameFieldDrawer('playerCanvas', test => {});
+    this.playerFieldDrawer = new GameFieldDrawer(
+      'playerCanvas',
+      test => {},
+      this.isNewPosValid.bind(this),
+      this.getShipIndex.bind(this)
+    );
     this.opponenGameFieldDrawer = new GameFieldDrawer(
       'opponentCanvas',
-      this.opponentGameFieldClickCallback.bind(this)
+      this.opponentGameFieldClickCallback.bind(this),
+      this.isNewPosValid.bind(this),
+      this.getShipIndex.bind(this)
     );
     this.opponenGameFieldDrawer.setHoveringEnabled(false);
     this.setupInitialGameField();

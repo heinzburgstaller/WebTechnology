@@ -1,4 +1,5 @@
 import { ASTWithSource } from '@angular/compiler';
+import { GameFieldPosition } from './models';
 
 const columnsOfField = 10;
 const rowsOfField = 10;
@@ -108,6 +109,8 @@ export class GameFieldDrawer {
 	hoveringEnabled: Boolean;
 
 	mouseClickCallback: (click) => void;
+	isNewPosValidCallback: (index, positions: [GameFieldPosition]) => boolean;
+	getShipIndexCallback: (position: GameFieldPosition) => number;
 
 	dragIndex: {x: number,y: number};
 	dropIndex: {x: number,y: number};
@@ -123,7 +126,7 @@ export class GameFieldDrawer {
 	// initializes gamefield with id and mouseClickback to get notified if a position is selected
 	//////////////////
 
-	constructor(canvasId, mouseClickCallback) {
+	constructor(canvasId, mouseClickCallback, isNewPosValidCallback, getShipIndexCallback) {
 
 		this.mouseClickCallback = mouseClickCallback;
 
@@ -515,9 +518,9 @@ export class GameFieldDrawer {
 				const indices = this.getIndicesForMouseEvent(arg);
 				const cell = this.cells[indices.x][indices.y];
 
-				for(var i=0; i<this.dragShipSize; i++){
+				for(var i=0; i <this.dragShipSize; i++){
 					if(this.dragHorizontal){
-						this.drawShipAtIndex(indices.x+i, indices.y, this.dragShipIndex)
+						this.drawShipAtIndex(indices.x +i, indices.y, this.dragShipIndex)
 					}else{
 						this.drawShipAtIndex(indices.x, indices.y+i, this.dragShipIndex)
 					}
@@ -526,8 +529,8 @@ export class GameFieldDrawer {
 			}
     }
     else if(arg.button === right){
-			var indices = this.getIndicesForMouseEvent(arg);
-			var cell = this.cells[indices.x][indices.y];
+			let indices = this.getIndicesForMouseEvent(arg);
+			let cell = this.cells[indices.x][indices.y];
 
 			console.log(this.getShipSize(cell, indices))
       this.spinShip(cell, this.getShipSize(cell, indices));
@@ -536,29 +539,29 @@ export class GameFieldDrawer {
 }
 
 	 spinShip(cell, size){
-		var spinAble = true;
-		//Check if Space free
+		let spinAble = true;
+		// Check if Space free
 
 		if(this.dragHorizontal){
-		for(var i = 0; i < this.cells.length; i++) {
-			var line = this.cells[i];
-			for(var j = 0; j < line.length; j++) {
+		for(let i = 0; i < this.cells.length; i++) {
+			let line = this.cells[i];
+			for(let j = 0; j < line.length; j++) {
 				if(cell == this.cells[i][j]){
 					console.log(size)
-					for(var length = 1; length < size; length++){
+					for(let length = 1; length < size; length++){
 						console.log(this.cells[i][j+length].fieldState)
 						if(this.cells[i][j+length].fieldState != CanvasFieldState.Empty){
 							spinAble = false;
 						}
 					}
 					if(spinAble){
-						var shipInd = cell.shipIndex;
-						var state = cell.fieldState;
+						let shipInd = cell.shipIndex;
+						let state = cell.fieldState;
 						this.removeShipFromCanvas(cell.shipIndex);
-						for(var length = 0; length < size; length++){
-							//this.removeShipFromCanvas(cell.shipIndex);
+						for(let length = 0; length < size; length++){
+							// this.removeShipFromCanvas(cell.shipIndex);
 							console.log("KOMMT HER")
-							this.cells[i][j+length].fieldState = state;
+							this.cells[i][j+ length].fieldState = state;
 							this.cells[i][j+length].shipIndex = shipInd;
 							this.drawShip(this.cells[i][j+length]);
 
@@ -569,23 +572,23 @@ export class GameFieldDrawer {
 		}
 	}
 	else{
-		for(var i = 0; i < this.cells.length; i++) {
-			var line = this.cells[i];
-			for(var j = 0; j < line.length; j++) {
+		for(let i = 0; i < this.cells.length; i++) {
+			let line = this.cells[i];
+			for(let j = 0; j < line.length; j++) {
 				if(cell == this.cells[i][j]){
 					console.log(size)
-					for(var length = 1; length < size; length++){
+					for(let length = 1; length < size; length++){
 						console.log(this.cells[i+length][j].fieldState)
 						if(this.cells[i+length][j].fieldState != CanvasFieldState.Empty){
 							spinAble = false;
 						}
 					}
 					if(spinAble){
-						var shipInd = cell.shipIndex;
-						var state = cell.fieldState;
+						const shipInd = cell.shipIndex;
+						const state = cell.fieldState;
 						this.removeShipFromCanvas(cell.shipIndex);
-						for(var length = 0; length < size; length++){
-							//this.removeShipFromCanvas(cell.shipIndex);
+						for(let length = 0; length < size; length++){
+							// this.removeShipFromCanvas(cell.shipIndex);
 							console.log("KOMMT HER")
 							this.cells[i+length][j].fieldState = state;
 							this.cells[i+length][j].shipIndex = shipInd;
@@ -606,9 +609,9 @@ export class GameFieldDrawer {
 
 
 	removeShipFromCanvas(index){
-		for(var i = 0; i < this.cells.length; i++) {
-    	var line = this.cells[i];
-    	for(var j = 0; j < line.length; j++) {
+		for(let i = 0; i < this.cells.length; i++) {
+    	const line = this.cells[i];
+    	for(let j = 0; j < line.length; j++) {
 				if(index == this.cells[i][j].shipIndex){
 					this.cells[i][j].fieldState = CanvasFieldState.Empty;
 					this.cells[i][j].shipIndex = -1;
@@ -622,31 +625,31 @@ export class GameFieldDrawer {
 		if(this.setUpFinished){
 			return;
 		}
-		var left, right;
+		let left, right;
 		left = 0;
 		right = 2;
 		if(arg.button === left){
-			var indices = this.getIndicesForMouseEvent(arg);
-			var cell = this.cells[indices.x][indices.y];
+			const indices = this.getIndicesForMouseEvent(arg);
+			const cell = this.cells[indices.x][indices.y];
 			this.dragShipIndex = cell.shipIndex;
 			this.dragging = true;
 			this.dragShipSize = this.getShipSize(cell, indices);
-			this.dragHorizontal = this.getShipOrientation(cell, indices); //TODO: find out horizontal/vertical
+			this.dragHorizontal = this.getShipOrientation(cell, indices); // TODO: find out horizontal/vertical
 			this.removeShipFromCanvas(this.dragShipIndex);
 		}
 		else{
-			var indices = this.getIndicesForMouseEvent(arg);
-			var cell = this.cells[indices.x][indices.y];
+			const indices = this.getIndicesForMouseEvent(arg);
+			const cell = this.cells[indices.x][indices.y];
 			this.dragShipIndex = cell.shipIndex;
 			this.dragShipSize = this.getShipSize(cell, indices);
 			this.dragHorizontal = this.getShipOrientation(cell, indices);
 		}
 	}
 
-	//true wenn horizontal
+	// true wenn horizontal
 	getShipOrientation(cell, indices){
-		let x = indices.x;
-		let y = indices.y;
+		const x = indices.x;
+		const y = indices.y;
 		try{
 			if(this.cells[x+1][y].shipIndex == cell.shipIndex || this.cells[x-1][y].shipIndex == cell.shipIndex){
 				return true;
@@ -661,18 +664,18 @@ export class GameFieldDrawer {
 		if(this.setUpFinished){
 			return;
 		}
-		var indices = this.getIndicesForMouseEvent(arg);
+		const indices = this.getIndicesForMouseEvent(arg);
 
 
 				if(this.dragging){
 					this.resetDragCells(this.drageCells);
-					for(var i=0; i<this.dragShipSize; i++){
+					for(let i =0; i < this.dragShipSize; i++){
 						if(this.dragHorizontal){
-							var cellToHover = this.cells[indices.x+i][indices.y];
+							const cellToHover = this.cells[indices.x + i][indices.y];
 							this.drageCells.push(cellToHover);
 							this.addDragHoveringToCell(cellToHover);
 						}else{
-							var cellToHover = this.cells[indices.x][indices.y+i];
+							const cellToHover = this.cells[indices.x][indices.y + i];
 							this.drageCells.push(cellToHover);
 							this.addDragHoveringToCell(cellToHover);
 						}
