@@ -49,6 +49,9 @@ export class NetworkService {
 
       this.enemyPeerId = conn.peer;
       this.connectedToSubscription = this.players.subscribe(players => {
+        if (this.connectedTo !== null) {
+          return;
+        }
         this.connectedTo = players.find(
           player => player.peerId === this.enemyPeerId
         );
