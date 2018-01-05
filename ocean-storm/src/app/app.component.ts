@@ -182,6 +182,7 @@ export class AppComponent implements OnInit, OnDestroy {
   // create and send action to enemy
   ////
   opponentGameFieldClickCallback(click) {
+    console.log('opponentGameFieldClickCallback');
     if (this.state === State.beInLine) {
       const action = {
         type: 'RequestHit',
@@ -192,6 +193,41 @@ export class AppComponent implements OnInit, OnDestroy {
       };
       this.sendToOpponent(action);
     }
+  }
+
+  /////
+  // callback for ship index
+  // returns ship index which is on a certain positio
+  ////
+  getShipIndex(position: GameFieldPosition) {
+    this.playerGameField.ships.forEach((ship, index) => {
+      ship.positions.forEach((pos) => {
+        if (pos.x === position.x && pos.y === position.y) {
+          return index;
+        }
+      });
+    });
+    return -1;
+  }
+
+  /////
+  // callback for change ship position
+  // check if pos is valid and if yes, gameField gets updated
+  ////
+  isNewPosValid(index, positions: [GameFieldPosition]) {
+    positions.forEach((pos) => {
+      if (this.playerGameField.field[pos.x][pos.y].index !== -1) {
+        return false;
+      }
+    });
+
+    // update playergamefield and ships
+    positions.forEach((pos) => {
+      this.playerGameField.field[pos.x][pos.y].index = index;
+    });
+    this.playerGameField.ships[index].positions = positions;
+
+    return true;
   }
 
   /////
