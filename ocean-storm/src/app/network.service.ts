@@ -43,7 +43,7 @@ export class NetworkService {
     });
 
     this.peer.on('connection', conn => {
-      if (this.connectedTo !== null) {
+      if (this.enemyPeerId !== null) {
         return;
       }
 
@@ -85,6 +85,9 @@ export class NetworkService {
     this.playersRef.update(this.key, { isPlaying: true });
     this.enemyPeerId = player.peerId;
     this.connectedToSubscription = this.players.subscribe(players => {
+      if (this.connectedTo !== null) {
+        return;
+      }
       this.connectedTo = players.find(p => p.peerId === this.enemyPeerId);
       this.messageEmitter.emit({ type: 'Connected', payload: '' });
     });
