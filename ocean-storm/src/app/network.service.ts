@@ -43,7 +43,7 @@ export class NetworkService {
     });
 
     this.peer.on('connection', conn => {
-      if (this.connectedTo !== null) {
+      if (this.enemyPeerId !== null) {
         return;
       }
 
