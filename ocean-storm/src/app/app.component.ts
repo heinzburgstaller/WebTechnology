@@ -153,7 +153,8 @@ export class AppComponent implements OnInit, OnDestroy {
   ////
   finishedSetup() {
     this.playerFieldDrawer.setHoveringEnabled(false);
-    this.playerFieldDrawer.setUpFinished = true;
+    this.opponenGameFieldDrawer.setSetUpFinished();
+    this.playerFieldDrawer.setSetUpFinished();
     if (this.isOpponentReady) {
       this.changeStateTo(State.beInLine);
       this.setupGameFieldFinished = true;
@@ -189,7 +190,6 @@ export class AppComponent implements OnInit, OnDestroy {
   // create and send action to enemy
   ////
   opponentGameFieldClickCallback(click) {
-    console.log('opponentGameFieldClickCallback');
     if (this.state === State.beInLine) {
       const action = {
         type: 'RequestHit',

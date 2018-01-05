@@ -146,6 +146,9 @@ export class GameFieldDrawer {
 		this.canvas.addEventListener('mousedown', this.handleMouseDown.bind(this), false);
 	}
 
+	setSetUpFinished(){
+		this.setUpFinished = true;
+	}
 
 	// draws the basic grid without any content
 	drawGameGrid() {
@@ -500,7 +503,6 @@ export class GameFieldDrawer {
 
 	// Notify
 	handleMouseClick(arg) {
-
 		if(this.setUpFinished){
 			const indices = this.getIndicesForMouseEvent(arg);
 			const cell = this.cells[indices.x][indices.y];
@@ -532,7 +534,6 @@ export class GameFieldDrawer {
 			let indices = this.getIndicesForMouseEvent(arg);
 			let cell = this.cells[indices.x][indices.y];
 
-			console.log(this.getShipSize(cell, indices))
       this.spinShip(cell, this.getShipSize(cell, indices));
     }
 	}
@@ -547,9 +548,7 @@ export class GameFieldDrawer {
 			let line = this.cells[i];
 			for(let j = 0; j < line.length; j++) {
 				if(cell == this.cells[i][j]){
-					console.log(size)
 					for(let length = 1; length < size; length++){
-						console.log(this.cells[i][j+length].fieldState)
 						if(this.cells[i][j+length].fieldState != CanvasFieldState.Empty){
 							spinAble = false;
 						}
@@ -559,8 +558,6 @@ export class GameFieldDrawer {
 						let state = cell.fieldState;
 						this.removeShipFromCanvas(cell.shipIndex);
 						for(let length = 0; length < size; length++){
-							// this.removeShipFromCanvas(cell.shipIndex);
-							console.log("KOMMT HER")
 							this.cells[i][j+ length].fieldState = state;
 							this.cells[i][j+length].shipIndex = shipInd;
 							this.drawShip(this.cells[i][j+length]);
@@ -576,9 +573,7 @@ export class GameFieldDrawer {
 			let line = this.cells[i];
 			for(let j = 0; j < line.length; j++) {
 				if(cell == this.cells[i][j]){
-					console.log(size)
 					for(let length = 1; length < size; length++){
-						console.log(this.cells[i+length][j].fieldState)
 						if(this.cells[i+length][j].fieldState != CanvasFieldState.Empty){
 							spinAble = false;
 						}
@@ -588,8 +583,6 @@ export class GameFieldDrawer {
 						const state = cell.fieldState;
 						this.removeShipFromCanvas(cell.shipIndex);
 						for(let length = 0; length < size; length++){
-							// this.removeShipFromCanvas(cell.shipIndex);
-							console.log("KOMMT HER")
 							this.cells[i+length][j].fieldState = state;
 							this.cells[i+length][j].shipIndex = shipInd;
 							this.drawShip(this.cells[i+length][j]);
@@ -601,9 +594,6 @@ export class GameFieldDrawer {
 		}
 	}
 
-
-
-		console.log(spinAble);
 	}
 
 
