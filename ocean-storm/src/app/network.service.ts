@@ -43,6 +43,10 @@ export class NetworkService {
     });
 
     this.peer.on('connection', conn => {
+      if (this.connectedTo !== null) {
+        return;
+      }
+
       this.enemyPeerId = conn.peer;
       this.connectedToSubscription = this.players.subscribe(players => {
         this.connectedTo = players.find(
