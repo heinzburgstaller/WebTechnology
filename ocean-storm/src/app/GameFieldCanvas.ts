@@ -700,9 +700,16 @@ export class GameFieldDrawer {
   }
 
   handleMouseMove(arg) {
-    if (this.setUpFinished) {
-      return;
-    }
+		if(this.setUpFinished && this.hoveringEnabled){
+			const indices = this.getIndicesForMouseEvent(arg);
+ 			if (indices.positionIsInField && this.hoveringEnabled) {
+ 				const potentialCell = this.cells[indices.x][indices.y];
+		  	this.resetHoverCell(this.hoverCell);
+				this.addHoveringToCell(potentialCell);
+				this.hoverCell = potentialCell
+			}
+			return;
+		}
     const indices = this.getIndicesForMouseEvent(arg);
 
     if (this.dragging) {
