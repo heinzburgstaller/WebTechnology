@@ -580,7 +580,6 @@ export class GameFieldDrawer {
         console.log(this.getShipSize(cell, indices));
         this.spinShip(cell, this.getShipSize(cell, indices));
       }
-			debugger;
 			console.log(this.isNewPosValidCallback(this.dragShipIndex, positions));
 			//positions = [];
     }
