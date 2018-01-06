@@ -254,6 +254,10 @@ export class AppComponent implements OnInit, OnDestroy {
   ////
   isNewPosValid(index, positions: GameFieldPosition[]) {
 
+    if(!positions){
+      return [false, this.playerGameField.field];
+    }
+
     var ok = true;
     positions.forEach(pos => {
       console.log(this.playerGameField.field[pos.x][pos.y].index);
@@ -262,14 +266,23 @@ export class AppComponent implements OnInit, OnDestroy {
         ok = false;
       }
     });
-    if (!ok) return false;
+    if (!ok) return [false, this.playerGameField.field];
+
+    //remove old position:
+    for(var i = 0; i < this.playerGameField.field.length; i++) {
+      var line = this.playerGameField.field[i];
+      for(var j = 0; j < line.length; j++) {
+        if(line[j].index == index)
+          line[j].index = -1;
+      }
+    }
     // update playergamefield and ships
     positions.forEach(pos => {
       this.playerGameField.field[pos.x][pos.y].index = index;
     });
     this.playerGameField.ships[index].positions = positions;
 
-    return ok;
+    return [true, this.playerGameField.field];
   }
 
   /////

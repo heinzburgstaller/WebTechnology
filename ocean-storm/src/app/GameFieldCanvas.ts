@@ -1,5 +1,6 @@
 import { ASTWithSource } from '@angular/compiler';
 import { GameFieldPosition } from './models';
+import {Entry} from './models';
 
 const columnsOfField = 10;
 const rowsOfField = 10;
@@ -101,7 +102,7 @@ export class GameFieldDrawer {
   hoveringEnabled: Boolean;
 
   mouseClickCallback: (click) => void;
-  isNewPosValidCallback: (index, positions: GameFieldPosition[]) => boolean;
+  isNewPosValidCallback: (index, positions: GameFieldPosition[]) => [boolean, Entry[][]];
   getShipIndexCallback: (position: GameFieldPosition) => number;
 
   dragIndex: { x: number; y: number };
@@ -582,12 +583,28 @@ export class GameFieldDrawer {
       } else if (arg.button === right) {
         const indices = this.getIndicesForMouseEvent(arg);
         const cell = this.cells[indices.x][indices.y];
-
-        console.log(this.getShipSize(cell, indices));
         this.spinShip(cell, this.getShipSize(cell, indices));
       }
-			console.log(this.isNewPosValidCallback(this.dragShipIndex, positions));
+      var isValid = this.isNewPosValidCallback(this.dragShipIndex, positions);
+      var successful = isValid[0];
+			if(!successful){
+        this.redoMoveOrSpin(isValid[1]);
+      }
     }
+  }
+
+  redoMoveOrSpin(entries: Entry[][]){
+    for(var i = 0; i < entries.length; i++) {
+    var line = entries[i];
+    for(var j = 0; j < line.length; j++) {
+      if(line[j].index != -1){
+        this.drawShipAtIndex(i, j, line[j].index)
+      }else{
+        this.clearCelldAtIndex(i,j);
+      }
+    }
+}
+
   }
 
   //Spin the ship if possible
@@ -600,9 +617,7 @@ export class GameFieldDrawer {
         const line = this.cells[i];
         for (let j = 0; j < line.length; j++) {
           if (cell === this.cells[i][j]) {
-            console.log(size);
             for (let length = 1; length < size; length++) {
-              console.log(this.cells[i][j + length].fieldState);
               if (
                 this.cells[i][j + length].fieldState !== CanvasFieldState.Empty
               ) {
@@ -614,8 +629,6 @@ export class GameFieldDrawer {
               const state = cell.fieldState;
               this.removeShipFromCanvas(cell.shipIndex);
               for (let length = 0; length < size; length++) {
-                // this.removeShipFromCanvas(cell.shipIndex);
-                console.log('KOMMT HER');
                 this.cells[i][j + length].fieldState = state;
                 this.cells[i][j + length].shipIndex = shipInd;
                 this.drawShip(this.cells[i][j + length]);
@@ -629,9 +642,7 @@ export class GameFieldDrawer {
         const line = this.cells[i];
         for (let j = 0; j < line.length; j++) {
           if (cell === this.cells[i][j]) {
-            console.log(size);
             for (let length = 1; length < size; length++) {
-              console.log(this.cells[i + length][j].fieldState);
               if (
                 this.cells[i + length][j].fieldState !== CanvasFieldState.Empty
               ) {
@@ -643,8 +654,6 @@ export class GameFieldDrawer {
               const state = cell.fieldState;
               this.removeShipFromCanvas(cell.shipIndex);
               for (let length = 0; length < size; length++) {
-                // this.removeShipFromCanvas(cell.shipIndex);
-                console.log('KOMMT HER');
                 this.cells[i + length][j].fieldState = state;
                 this.cells[i + length][j].shipIndex = shipInd;
                 this.drawShip(this.cells[i + length][j]);
@@ -654,8 +663,6 @@ export class GameFieldDrawer {
         }
       }
     }
-
-    console.log(spinAble);
   }
 
   removeShipFromCanvas(index) {
@@ -728,6 +735,7 @@ export class GameFieldDrawer {
     if (this.dragging) {
       this.resetDragCells(this.drageCells);
       for (let i = 0; i < this.dragShipSize; i++) {
+        try{
         if (this.dragHorizontal) {
           const cellToHover = this.cells[indices.x + i][indices.y];
           this.drageCells.push(cellToHover);
@@ -738,10 +746,20 @@ export class GameFieldDrawer {
           this.addDragHoveringToCell(cellToHover);
         }
       }
+      catch (e){
+        if(e instanceof TypeError){
+          console.log('out of range');
+          this.dragging = false;
+          var isValid = this.isNewPosValidCallback(this.dragShipIndex, null);
+          this.redoMoveOrSpin(isValid[1]);
+        }
+      }
+      }
     }
   }
 
-  handleMouseOut() {}
+  handleMouseOut() {
+  }
 
   // Get index of cell that is occupied by the mouse
   getIndicesForMouseEvent(arg) {
