@@ -79,7 +79,7 @@
             </td>
 
             <td>
-              <div id="target" (drop)="drop($event, data)" (dragover)="allowDrop($event)">
+              <div id="target" (drop)="drop($event, player)" (dragover)="allowDrop($event)">
                 <button *ngIf="player.peerId != networkService.peerId" type="button"
                   clickable="false" title="Start game with this player..."
                   style="border: 2px dotted green;" class="btn btn-default btn-sm btn-block">

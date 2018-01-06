@@ -57,7 +57,7 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
 
-  dragStart(event, data) {
+  onDragStart(event, data) {
     event.dataTransfer.setData('data', data);
   }
 
@@ -65,10 +65,11 @@ export class AppComponent implements OnInit, OnDestroy {
     ev.preventDefault();
   }
 
-  drop(ev, data1) {
-    ev.preventDefault();
+  drop(ev, player) {
+    /*ev.preventDefault();
     var data = ev.dataTransfer.getData('text');
-    ev.target.appendChild(document.getElementById(data));
+    ev.target.appendChild(document.getElementById(data));*/
+    this.playWith(player);
   }
 
 
@@ -308,7 +309,6 @@ export class AppComponent implements OnInit, OnDestroy {
     if (index !== -1) {
       // hit
       const isSunk = this.playerGameField.ships[index].setPosToHitted(pos);
-      debugger;
       if (isSunk) {
         // ship is sunk
         const shipSunkSound = document.getElementsByTagName('audio')[0];
