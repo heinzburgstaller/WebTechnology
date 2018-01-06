@@ -56,6 +56,18 @@ export class AppComponent implements OnInit, OnDestroy {
     this.subscription.unsubscribe();
   }
 
+
+  allowDrop(ev){
+    ev.preventDefault();
+  }
+
+  drop(ev){
+    ev.preventDefault();
+    var data=ev.dataTransfer.getData("text");
+    ev.target.appendChild(document.getElementById(data));
+  }
+
+
   /////
   // parse message from peer connection
   // basic game logic is included
