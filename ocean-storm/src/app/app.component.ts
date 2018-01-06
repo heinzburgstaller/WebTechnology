@@ -57,13 +57,17 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
 
-  allowDrop(ev){
+  dragStart(event, data) {
+    event.dataTransfer.setData('data', data);
+  }
+
+  allowDrop(ev) {
     ev.preventDefault();
   }
 
-  drop(ev){
+  drop(ev, data1) {
     ev.preventDefault();
-    var data=ev.dataTransfer.getData("text");
+    var data = ev.dataTransfer.getData('text');
     ev.target.appendChild(document.getElementById(data));
   }
 
@@ -127,7 +131,7 @@ export class AppComponent implements OnInit, OnDestroy {
       default:
         console.log(
           'wrong action structur -> no type defined : ' +
-            JSON.stringify(message)
+          JSON.stringify(message)
         );
         break;
     }
@@ -199,19 +203,19 @@ export class AppComponent implements OnInit, OnDestroy {
     this.setupInitialGameField();
   }
 
-/*  playerGameFieldClickCallback(cells){
-    this.playerGameField.ships = [];
-    for (let i = 0; i < this.playerGameField.field.length; i++) {
-      const line = cells[i];
-      for (let j = 0; j < this.playerGameField.field.length; j++) {
-        this.playerGameField.field[i][j].index = cells[i][j].shipIndex;
-        if(cells[i][j].shipIndex != -1){
-          //this.playerGameField.ships[cells[i][j].shipIndex-1].positions.push(new GameFieldPosition(i,j));
-          console.log(this.playerGameField.ships);
+  /*  playerGameFieldClickCallback(cells){
+      this.playerGameField.ships = [];
+      for (let i = 0; i < this.playerGameField.field.length; i++) {
+        const line = cells[i];
+        for (let j = 0; j < this.playerGameField.field.length; j++) {
+          this.playerGameField.field[i][j].index = cells[i][j].shipIndex;
+          if(cells[i][j].shipIndex != -1){
+            //this.playerGameField.ships[cells[i][j].shipIndex-1].positions.push(new GameFieldPosition(i,j));
+            console.log(this.playerGameField.ships);
+          }
         }
       }
-    }
-  }*/
+    }*/
 
   /////
   // callback for clicks on gamefield
@@ -259,7 +263,7 @@ export class AppComponent implements OnInit, OnDestroy {
         ok = false;
       }
     });
-    if(!ok) return false;
+    if (!ok) return false;
     // update playergamefield and ships
     positions.forEach(pos => {
       this.playerGameField.field[pos.x][pos.y].index = index;
