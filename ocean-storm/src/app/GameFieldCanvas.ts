@@ -373,7 +373,7 @@ export class GameFieldDrawer {
       }
     }
   }
-
+  //Get the size of the ship for a given cell
   getShipSize(cell, indices) {
     const x = indices.x;
     const y = indices.y;
@@ -428,6 +428,8 @@ export class GameFieldDrawer {
   }
 
   // Hovering
+  //2 different kinds of hovering: one as a cursor when the game started
+  //and one for the ship that gets moved
 
   // Enable/Disable hovering depening on the field and which player is playing
   setHoveringEnabled(hovering: Boolean) {
@@ -445,6 +447,7 @@ export class GameFieldDrawer {
     );
   }
 
+  //Paints the hover to a cell
   addDragHoveringToCell(cell) {
     this.ctx.fillStyle = shipColors[this.dragShipIndex];
     this.ctx.fillRect(
@@ -455,6 +458,7 @@ export class GameFieldDrawer {
     );
   }
 
+  //remves the hover from the cell and clears the list of cells
   resetDragCells(cells) {
     for (const entry of cells) {
       this.resetHoverCell(entry); // 1, "string", false
@@ -532,7 +536,9 @@ export class GameFieldDrawer {
   ////////////////////////
   // Mouse Events
 
-  // Notify
+  // In Gamephase: picks enemy cell
+  // In Setupphase: Left mouse: saves the chosen ship to its new position
+  //                Right mouse: spins the ship if possible
   handleMouseClick(arg) {
     if (this.setUpFinished) {
       const indices = this.getIndicesForMouseEvent(arg);
@@ -581,10 +587,10 @@ export class GameFieldDrawer {
         this.spinShip(cell, this.getShipSize(cell, indices));
       }
 			console.log(this.isNewPosValidCallback(this.dragShipIndex, positions));
-			//positions = [];
     }
   }
 
+  //Spin the ship if possible
   spinShip(cell, size) {
     let spinAble = true;
     // Check if Space free
@@ -665,6 +671,7 @@ export class GameFieldDrawer {
     }
   }
 
+  //gets the ship to drag
   handleMouseDown(arg) {
     if (this.setUpFinished) {
       return;
@@ -704,6 +711,7 @@ export class GameFieldDrawer {
     return false;
   }
 
+  //paints the hover when dragging a ship
   handleMouseMove(arg) {
 		if(this.setUpFinished && this.hoveringEnabled){
 			const indices = this.getIndicesForMouseEvent(arg);
