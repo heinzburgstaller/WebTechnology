@@ -727,7 +727,10 @@ export class GameFieldDrawer {
 		  	this.resetHoverCell(this.hoverCell);
 				this.addHoveringToCell(potentialCell);
 				this.hoverCell = potentialCell
-			}
+			} else {
+        this.resetHoverCell(this.hoverCell);
+        this.hoverCell = null;
+      }
 			return;
 		}
     const indices = this.getIndicesForMouseEvent(arg);
@@ -759,6 +762,9 @@ export class GameFieldDrawer {
   }
 
   handleMouseOut() {
+    const ctx = this.canvas.getContext('2d');
+		this.resetHoverCell(this.hoverCell);
+		this.hoverCell = null;
   }
 
   // Get index of cell that is occupied by the mouse
