@@ -27,6 +27,8 @@ export class AppComponent implements OnInit, OnDestroy {
 
   isOpponentReady = false;
 
+  player: NetworkService;
+
   constructor(public networkService: NetworkService) {
     console.log('constructor');
   }
@@ -56,10 +58,10 @@ export class AppComponent implements OnInit, OnDestroy {
     this.subscription.unsubscribe();
   }
 
-  // Player data
-  onDragStart(event, player) {
-    var playerData = JSON.stringify(player);
-    event.dataTransfer.setData("playerdata", playerData);
+  //Dummy Data, needed for Firefox
+  onDragStart(event, data) {
+    event.dataTransfer.setData('data', data);
+    this.player = data;
   }
 
   allowDrop(ev) {
@@ -67,11 +69,8 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
 
-  drop(ev, targetPlayer) {
-    var playerData = ev.dataTransfer.getData("playerdata");
-    var player = JSON.parse(playerData);
-    this.playWith(player);
-    ev.dataTransfer.clearData();
+  drop(ev) {
+    this.playWith(this.player);
   }
 
 
@@ -264,9 +263,8 @@ export class AppComponent implements OnInit, OnDestroy {
 
     let ok = true;
     positions.forEach(pos => {
-      console.log(this.playerGameField.field[pos.x][pos.y].index);
-      if (this.playerGameField.field[pos.x][pos.y].index > -1) {
-        console.log('KOMMT HEEER');
+      if (this.playerGameField.field[pos.x][pos.y].index > -1
+      && this.playerGameField.field[pos.x][pos.y].index != index) {
         ok = false;
       }
     });

@@ -549,7 +549,9 @@ export class GameFieldDrawer {
         indices.positionIsInField &&
         cell.fieldState === CanvasFieldState.Empty
       ) {
-        this.mouseClickCallback(indices);
+        if(this.mouseClickCallback != null){
+          this.mouseClickCallback(indices);
+        }
       }
     } else {
 			let positions: GameFieldPosition[] = [];
@@ -580,15 +582,19 @@ export class GameFieldDrawer {
           }
           this.dragging = false;
         }
-      } else if (arg.button === right) {
+      } else if (arg.button === right && this.mouseClickCallback == null) {
         const indices = this.getIndicesForMouseEvent(arg);
         const cell = this.cells[indices.x][indices.y];
-        this.spinShip(cell, this.getShipSize(cell, indices));
+        var shipSize = this.getShipSize(cell, indices)
+        if(shipSize)
+          this.spinShip(cell, shipSize);
       }
-      var isValid = this.isNewPosValidCallback(this.dragShipIndex, positions);
-      var successful = isValid[0];
-			if(!successful){
-        this.redoMoveOrSpin(isValid[1]);
+      if(positions.length != 0  && this.mouseClickCallback == null){
+        var isValid = this.isNewPosValidCallback(this.dragShipIndex, positions);
+        var successful = isValid[0];
+			  if(!successful){
+          this.redoMoveOrSpin(isValid[1]);
+        }
       }
     }
   }
@@ -611,6 +617,7 @@ export class GameFieldDrawer {
   spinShip(cell, size) {
     let spinAble = true;
     // Check if Space free
+    let positions: GameFieldPosition[] = [];
 
     if (this.dragHorizontal) {
       for (let i = 0; i < this.cells.length; i++) {
@@ -632,6 +639,7 @@ export class GameFieldDrawer {
                 this.cells[i][j + length].fieldState = state;
                 this.cells[i][j + length].shipIndex = shipInd;
                 this.drawShip(this.cells[i][j + length]);
+                positions.push(new GameFieldPosition(i, j+length));
               }
             }
           }
@@ -657,11 +665,17 @@ export class GameFieldDrawer {
                 this.cells[i + length][j].fieldState = state;
                 this.cells[i + length][j].shipIndex = shipInd;
                 this.drawShip(this.cells[i + length][j]);
+                positions.push(new GameFieldPosition(i+length, j))
               }
             }
           }
         }
       }
+    }
+    var isValid = this.isNewPosValidCallback(this.dragShipIndex, positions);
+    var successful = isValid[0];
+	  if(!successful){
+      this.redoMoveOrSpin(isValid[1]);
     }
   }
 
@@ -751,7 +765,6 @@ export class GameFieldDrawer {
       }
       catch (e){
         if(e instanceof TypeError){
-          console.log('out of range');
           this.dragging = false;
           var isValid = this.isNewPosValidCallback(this.dragShipIndex, null);
           this.redoMoveOrSpin(isValid[1]);
@@ -764,7 +777,12 @@ export class GameFieldDrawer {
   handleMouseOut() {
     const ctx = this.canvas.getContext('2d');
 		this.resetHoverCell(this.hoverCell);
-		this.hoverCell = null;
+	  this.hoverCell = null;
+    if(this.mouseClickCallback == null){
+      var isValid = this.isNewPosValidCallback(this.dragShipIndex, null);
+      this.redoMoveOrSpin(isValid[1]);
+    }
+
   }
 
   // Get index of cell that is occupied by the mouse
