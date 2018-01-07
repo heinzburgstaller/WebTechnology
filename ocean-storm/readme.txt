@@ -10,7 +10,11 @@ Run `npm install` in the root folder to install all necessary packages.
 
 Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
 
-## Production server
+## Production build
 
 Run `ng build --prod --base-href ./` for a production build and start it with `ng serve —prod`.
+
+## Open Production build
+ocean-storm/dist/index.html
+
  
