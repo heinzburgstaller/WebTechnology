@@ -56,9 +56,10 @@ export class AppComponent implements OnInit, OnDestroy {
     this.subscription.unsubscribe();
   }
 
-  // Dummy Data, needed for Firefox
-  onDragStart(event, data) {
-    event.dataTransfer.setData('data', data);
+  // Player data
+  onDragStart(event, player) {
+    var playerData = JSON.stringify(player);
+    event.dataTransfer.setData("playerdata", playerData);
   }
 
   allowDrop(ev) {
@@ -66,8 +67,11 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
 
-  drop(ev, player) {
+  drop(ev, targetPlayer) {
+    var playerData = ev.dataTransfer.getData("playerdata");
+    var player = JSON.parse(playerData);
     this.playWith(player);
+    ev.dataTransfer.clearData();
   }
 
 
