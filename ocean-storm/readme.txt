@@ -15,6 +15,6 @@ Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app w
 Run `ng build --prod --base-href ./` for a production build and start it with `ng serve —prod`.
 
 ## Open Production build
-ocean-storm/dist/index.html
+dist/index.html
 
  
