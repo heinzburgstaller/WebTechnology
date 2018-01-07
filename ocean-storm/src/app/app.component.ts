@@ -27,6 +27,8 @@ export class AppComponent implements OnInit, OnDestroy {
 
   isOpponentReady = false;
 
+  player: NetworkService;
+
   constructor(public networkService: NetworkService) {
     console.log('constructor');
   }
@@ -59,6 +61,7 @@ export class AppComponent implements OnInit, OnDestroy {
   //Dummy Data, needed for Firefox
   onDragStart(event, data) {
     event.dataTransfer.setData('data', data);
+    this.player = data;
   }
 
   allowDrop(ev) {
@@ -66,8 +69,8 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
 
-  drop(ev, player) {
-    this.playWith(player);
+  drop(ev) {
+    this.playWith(this.player);
   }
 
 
@@ -260,9 +263,8 @@ export class AppComponent implements OnInit, OnDestroy {
 
     var ok = true;
     positions.forEach(pos => {
-      console.log(this.playerGameField.field[pos.x][pos.y].index);
-      if (this.playerGameField.field[pos.x][pos.y].index > -1) {
-        console.log("KOMMT HEEER")
+      if (this.playerGameField.field[pos.x][pos.y].index > -1
+      && this.playerGameField.field[pos.x][pos.y].index != index) {
         ok = false;
       }
     });
