@@ -56,7 +56,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.subscription.unsubscribe();
   }
 
-  //Dummy Data, needed for Firefox
+  // Dummy Data, needed for Firefox
   onDragStart(event, data) {
     event.dataTransfer.setData('data', data);
   }
@@ -254,26 +254,29 @@ export class AppComponent implements OnInit, OnDestroy {
   ////
   isNewPosValid(index, positions: GameFieldPosition[]) {
 
-    if(!positions){
+    if (!positions) {
       return [false, this.playerGameField.field];
     }
 
-    var ok = true;
+    let ok = true;
     positions.forEach(pos => {
       console.log(this.playerGameField.field[pos.x][pos.y].index);
       if (this.playerGameField.field[pos.x][pos.y].index > -1) {
-        console.log("KOMMT HEEER")
+        console.log('KOMMT HEEER');
         ok = false;
       }
     });
-    if (!ok) return [false, this.playerGameField.field];
+    if (!ok) {
+      return [false, this.playerGameField.field];
+    }
 
-    //remove old position:
-    for(var i = 0; i < this.playerGameField.field.length; i++) {
-      var line = this.playerGameField.field[i];
-      for(var j = 0; j < line.length; j++) {
-        if(line[j].index == index)
+    // remove old position:
+    for (let i = 0; i < this.playerGameField.field.length; i++) {
+      const line = this.playerGameField.field[i];
+      for (let j = 0; j < line.length; j++) {
+        if (line[j].index === index) {
           line[j].index = -1;
+        }
       }
     }
     // update playergamefield and ships
